@@ -1,0 +1,5 @@
+<additional>
+  <vType id="motorcycle" vClass="motorcycle"/>
+  <vType id="bicycle" vClass="bicycle"/>
+  <vType id="bus" vClass="bus"/>
+</additional>
