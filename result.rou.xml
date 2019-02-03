@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on Thu Jan 10 11:48:59 2019 by SUMO duarouter Version 0.32.0
+<!-- generated on Fri Jan 11 22:21:21 2019 by SUMO duarouter Version 0.32.0
 <?xml version="1.0" encoding="UTF-8"?>
 
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
 
     <input>
-        <net-file value="new_map.net.xml"/>
+        <net-file value="net.net.xml"/>
         <route-files value="trips.trips.xml"/>
     </input>
 
@@ -19,122 +19,99 @@
 -->
 
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+<vType id="bus" vClass="bus" guiShape="bus" minGap="2" length="9.44" width="2.45" height="3.1"
+latAlignment="left" lcPushy="1"/>
+<flow id="myflow37" begin="0" end="3600" number="200" from="gneE0" to="gneE51" type="bus"/>
+<flow id="myflow" begin="0" end="3600" number="200" from="gneE52" to="gneE20" type="bus"/>
+<flow id="myflow2" begin="0" end="3600" number="200" from="gneE64" to="gneE80" type="bus"/>
+<flow id="myflow3" begin="0" end="3600" number="200" from="gneE81" to="gneE63" type="bus"/>
+<flow id="myflow18" begin="0" end="3600" number="200" from="T1" to="gneE63" type="bus"/>
+<flow id="myflow25" begin="0" end="3600" number="200" from="T2" to="gneE63" type="bus"/>
+<flow id="myflow31" begin="0" end="3600" number="200" from="T8" to="gneE63" type="bus"/>
 
-<vType id="bus" vClass="bus" guiShape="bus" minGap="2"/>
-<flow id="myflow37" begin="0" end="3600" number="100" from="L14" to="L56" type="bus"/>
-<flow id="myflow" begin="0" end="3600" number="100" from="L65" to="L34" type="bus"/>
-<flow id="myflow2" begin="0" end="3600" number="100" from="L23" to="D4" type="bus"/>
-<flow id="myflow3" begin="0" end="3600" number="100" from="D3" to="L32" type="bus"/>
-<flow id="myflow57" begin="0" end="3600" number="100" from="D3" to="L21" type="bus"/>
-<flow id="myflow65" begin="0" end="3600" number="100" from="D3" to="L56" type="bus"/>
-<flow id="myflow73" begin="0" end="3600" number="100" from="D3" to="L41" type="bus"/>
-<flow id="myflow18" begin="0" end="3600" number="100" from="L12" to="D6" type="bus"/>
-<flow id="myflow25" begin="0" end="3600" number="100" from="D5" to="L14" type="bus"/>
-<flow id="myflow31" begin="0" end="3600" number="100" from="D2" to="D4" type="bus"/>
-<flow id="myflow81" begin="0" end="3600" number="100" from="L23" to="L34" type="bus"/>
-<flow id="myflow89" begin="0" end="3600" number="100" from="L43" to="D4" type="bus"/>
-<flow id="myflow97" begin="0" end="3600" number="100" from="L65" to="L32" type="bus"/>
+<vType id="bicycle" vClass="bicycle" minGap="0.5" latAlignment="arbitrary" lcPushy="1"/>
+<flow id="myflow38" begin="0" end="3600" number="100" from="gneE0" to="gneE51" type="bicycle"/>
+<flow id="myflow4" begin="0" end="3600" number="100" from="gneE52" to="gneE20" type="bicycle"/>
+<flow id="myflow5" begin="0" end="3600" number="100" from="gneE64" to="gneE80" type="bicycle"/>
+<flow id="myflow6" begin="0" end="3600" number="100" from="gneE81" to="gneE63" type="bicycle"/>
+<flow id="myflow16" begin="0" end="3600" number="100" from="T1" to="gneE63" type="bicycle"/>
+<flow id="myflow26" begin="0" end="3600" number="100" from="T2" to="T5" type="bicycle"/>
+<flow id="myflow32" begin="0" end="3600" number="100" from="T4" to="T6" type="bicycle"/>
 
-<vType id="bicycle" vClass="bicycle" minGap="0.5"/>
-<flow id="myflow38" begin="0" end="3600" number="100" from="L14" to="L56" type="bicycle"/>
-<flow id="myflow4" begin="0" end="3600" number="100" from="L65" to="L34" type="bicycle"/>
-<flow id="myflow5" begin="0" end="3600" number="100" from="L23" to="D4" type="bicycle"/>
-<flow id="myflow6" begin="0" end="3600" number="100" from="D3" to="L32" type="bicycle"/>
-<flow id="myflow58" begin="0" end="3600" number="100" from="D3" to="L21" type="bicycle"/>
-<flow id="myflow66" begin="0" end="3600" number="100" from="D3" to="L56" type="bicycle"/>
-<flow id="myflow74" begin="0" end="3600" number="100" from="D3" to="L41" type="bicycle"/>
-<flow id="myflow16" begin="0" end="3600" number="100" from="L12" to="D6" type="bicycle"/>
-<flow id="myflow26" begin="0" end="3600" number="100" from="D5" to="L14" type="bicycle"/>
-<flow id="myflow32" begin="0" end="3600" number="100" from="D2" to="D4" type="bicycle"/>
-<flow id="myflow82" begin="0" end="3600" number="100" from="L23" to="L34" type="bicycle"/>
-<flow id="myflow90" begin="0" end="3600" number="100" from="L43" to="D4" type="bicycle"/>
-<flow id="myflow98" begin="0" end="3600" number="100" from="L65" to="L32" type="bicycle"/>
+<vType id="motorcycle" vClass="motorcycle" minGap="0.5" length="2.034" width="0.74" height="1.152"
+latAlignment="right" lcPushy="1"/>
+<flow id="myflow39" begin="0" end="3600" number="600" from="gneE0" to="gneE51" type="motorcycle"/>
+<flow id="myflow7" begin="0" end="3600" number="600" from="gneE52" to="gneE20" type="motorcycle"/>
+<flow id="myflow8" begin="0" end="3600" number="600" from="gneE64" to="gneE80" type="motorcycle"/>
+<flow id="myflow9" begin="0" end="3600" number="600" from="gneE81" to="gneE63" type="motorcycle"/>
+<flow id="myflow17" begin="0" end="3600" number="600" from="T1" to="gneE63" type="motorcycle"/>
+<flow id="myflow27" begin="0" end="3600" number="600" from="T2" to="gneE63" type="motorcycle"/>
+<flow id="myflow33" begin="0" end="3600" number="600" from="T8" to="gneE63" type="motorcycle"/>
 
-<vType id="motorcycle" vClass="motorcycle" minGap="0.5"/>
-<flow id="myflow39" begin="0" end="3600" number="600" from="L14" to="L56" type="motorcycle"/>
-<flow id="myflow7" begin="0" end="3600" number="600" from="L65" to="L34" type="motorcycle"/>
-<flow id="myflow8" begin="0" end="3600" number="600" from="L23" to="D4" type="motorcycle"/>
-<flow id="myflow9" begin="0" end="3600" number="600" from="D3" to="L32" type="motorcycle"/>
-<flow id="myflow67" begin="0" end="3600" number="600" from="D3" to="L56" type="motorcycle"/>
-<flow id="myflow59" begin="0" end="3600" number="600" from="D3" to="L21" type="motorcycle"/>
-<flow id="myflow75" begin="0" end="3600" number="600" from="D3" to="L41" type="motorcycle"/>
-<flow id="myflow17" begin="0" end="3600" number="600" from="L12" to="D6" type="motorcycle"/>
-<flow id="myflow27" begin="0" end="3600" number="600" from="D5" to="L14" type="motorcycle"/>
-<flow id="myflow33" begin="0" end="3600" number="600" from="D2" to="D4" type="motorcycle"/>
-<flow id="myflow83" begin="0" end="3600" number="600" from="L23" to="L34" type="motorcycle"/>
-<flow id="myflow91" begin="0" end="3600" number="600" from="L43" to="D4" type="motorcycle"/>
-<flow id="myflow99" begin="0" end="3600" number="600" from="L65" to="L32" type="motorcycle"/>
+<vType id="truckv1" vClass="truck" guiShape="truck" minGap="2" length="4.3" width="1.8" height="2.0"
+latAlignment="left" lcPushy="1"/>
+<flow id="myflow40" begin="0" end="3600" number="300" from="gneE0" to="gneE51" type="truckv1"/>
+<flow id="myflow10" begin="0" end="3600" number="300" from="gneE52" to="gneE20" type="truckv1"/>
+<flow id="myflow11" begin="0" end="3600" number="300" from="gneE64" to="gneE80" type="truckv1"/>
+<flow id="myflow12" begin="0" end="3600" number="300" from="gneE81" to="gneE63" type="truckv1"/>
+<flow id="myflow19" begin="0" end="3600" number="300" from="T1" to="gneE63" type="truckv1"/>
+<flow id="myflow28" begin="0" end="3600" number="300" from="T2" to="gneE63" type="truckv1"/>
+<flow id="myflow34" begin="0" end="3600" number="300" from="T8" to="gneE63" type="truckv1"/>
 
-<vType id="truck" vClass="truck" guiShape="truck" minGap="2"/>
-<flow id="myflow40" begin="0" end="3600" number="200" from="L14" to="L56" type="truck"/>
-<flow id="myflow10" begin="0" end="3600" number="200" from="L65" to="L34" type="truck"/>
-<flow id="myflow11" begin="0" end="3600" number="200" from="L23" to="D4" type="truck"/>
-<flow id="myflow60" begin="0" end="3600" number="200" from="D3" to="L32" type="truck"/>
-<flow id="myflow12" begin="0" end="3600" number="200" from="D3" to="L21" type="truck"/>
-<flow id="myflow68" begin="0" end="3600" number="200" from="D3" to="L56" type="truck"/>
-<flow id="myflow76" begin="0" end="3600" number="200" from="D3" to="L41" type="truck"/>
-<flow id="myflow19" begin="0" end="3600" number="200" from="L12" to="D6" type="truck"/>
-<flow id="myflow28" begin="0" end="3600" number="200" from="D5" to="L14" type="truck"/>
-<flow id="myflow34" begin="0" end="3600" number="200" from="D2" to="D4" type="truck"/>
-<flow id="myflow84" begin="0" end="3600" number="200" from="L23" to="L34" type="truck"/>
-<flow id="myflow92" begin="0" end="3600" number="200" from="L43" to="D4" type="truck"/>
-<flow id="myflow100" begin="0" end="3600" number="200" from="L65" to="L32" type="truck"/>
+<vType id="truckv2" vClass="truck" guiShape="truck" minGap="2" length="9.5" width="2.35" height="2.6"
+latAlignment="left" lcPushy="1"/>
+<flow id="myflow64" begin="0" end="3600" number="300" from="gneE0" to="gneE51" type="truckv2"/>
+<flow id="myflow65" begin="0" end="3600" number="300" from="gneE52" to="gneE20" type="truckv2"/>
+<flow id="myflow66" begin="0" end="3600" number="300" from="gneE64" to="gneE80" type="truckv2"/>
+<flow id="myflow67" begin="0" end="3600" number="300" from="gneE81" to="gneE63" type="truckv2"/>
+<flow id="myflow68" begin="0" end="3600" number="300" from="T1" to="gneE63" type="truckv2"/>
+<flow id="myflow69" begin="0" end="3600" number="300" from="T2" to="gneE63" type="truckv2"/>
+<flow id="myflow70" begin="0" end="3600" number="300" from="T8" to="gneE63" type="truckv2"/>
 
-<vType id="police" vClass="emergency" guiShape="police" minGap="2"/>
-<vType id="firebrigade" vClass="emergency" guiShape="firebrigade"/>
-<vType id="emergency" vClass="emergency" guiShape="emergency"/>
-<flow id="myflow41" begin="0" end="3600" number="20" from="L14" to="L56" type="police"/>
-<flow id="myflow43" begin="0" end="3600" number="20" from="L14" to="L56" type="firebrigade"/>
-<flow id="myflow44" begin="0" end="3600" number="20" from="L14" to="L56" type="emergency"/>
-<flow id="myflow13" begin="0" end="3600" number="20" from="L65" to="L34" type="police"/>
-<flow id="myflow45" begin="0" end="3600" number="20" from="L65" to="L34" type="firebrigade"/>
-<flow id="myflow46" begin="0" end="3600" number="20" from="L65" to="L34" type="emergency"/>
-<flow id="myflow14" begin="0" end="3600" number="20" from="L23" to="D4" type="police"/>
-<flow id="myflow47" begin="0" end="3600" number="20" from="L23" to="D4" type="firebrigade"/>
-<flow id="myflow48" begin="0" end="3600" number="20" from="L23" to="D4" type="emergency"/>
-<flow id="myflow15" begin="0" end="3600" number="20" from="D3" to="L32" type="police"/>
-<flow id="myflow49" begin="0" end="3600" number="20" from="D3" to="L32" type="firebrigade"/>
-<flow id="myflow50" begin="0" end="3600" number="20" from="D3" to="L32" type="emergency"/>
-<flow id="myflow61" begin="0" end="3600" number="20" from="D3" to="L21" type="police"/>
-<flow id="myflow62" begin="0" end="3600" number="20" from="D3" to="L21" type="firebrigade"/>
-<flow id="myflow63" begin="0" end="3600" number="20" from="D3" to="L21" type="emergency"/>
-<flow id="myflow69" begin="0" end="3600" number="20" from="D3" to="L56" type="police"/>
-<flow id="myflow70" begin="0" end="3600" number="20" from="D3" to="L56" type="firebrigade"/>
-<flow id="myflow71" begin="0" end="3600" number="20" from="D3" to="L56" type="emergency"/>
-<flow id="myflow77" begin="0" end="3600" number="20" from="D3" to="L41" type="police"/>
-<flow id="myflow78" begin="0" end="3600" number="20" from="D3" to="L41" type="firebrigade"/>
-<flow id="myflow79" begin="0" end="3600" number="20" from="D3" to="L41" type="emergency"/>
-<flow id="myflow20" begin="0" end="3600" number="20" from="L12" to="D6" type="police"/>
-<flow id="myflow51" begin="0" end="3600" number="20" from="L12" to="D6" type="firebrigade"/>
-<flow id="myflow52" begin="0" end="3600" number="20" from="L12" to="D6" type="emergency"/>
-<flow id="myflow29" begin="0" end="3600" number="20" from="D5" to="L14" type="police"/>
-<flow id="myflow53" begin="0" end="3600" number="20" from="D5" to="L14" type="firebrigade"/>
-<flow id="myflow54" begin="0" end="3600" number="20" from="D5" to="L14" type="emergency"/>
-<flow id="myflow35" begin="0" end="3600" number="20" from="D2" to="D4" type="police"/>
-<flow id="myflow55" begin="0" end="3600" number="20" from="D2" to="D4" type="firebrigade"/>
-<flow id="myflow56" begin="0" end="3600" number="20" from="D2" to="D4" type="emergency"/>
-<flow id="myflow85" begin="0" end="3600" number="20" from="L23" to="L34" type="police"/>
-<flow id="myflow86" begin="0" end="3600" number="20" from="L23" to="L34" type="firebrigade"/>
-<flow id="myflow87" begin="0" end="3600" number="20" from="L23" to="L34" type="emergency"/>
-<flow id="myflow93" begin="0" end="3600" number="20" from="L43" to="D4" type="police"/>
-<flow id="myflow94" begin="0" end="3600" number="20" from="L43" to="D4" type="firebrigade"/>
-<flow id="myflow95" begin="0" end="3600" number="20" from="L43" to="D4" type="emergency"/>
-<flow id="myflow101" begin="0" end="3600" number="20" from="L65" to="L32" type="police"/>
-<flow id="myflow102" begin="0" end="3600" number="20" from="L65" to="L32" type="firebrigade"/>
-<flow id="myflow103" begin="0" end="3600" number="20" from="L65" to="L32" type="emergency"/>
+<vType id="police" vClass="emergency" guiShape="police" minGap="2"
+latAlignment="arbitrary" lcPushy="1"/>
+<vType id="firebrigade" vClass="emergency" guiShape="firebrigade"
+latAlignment="arbitrary" lcPushy="1"/>
+<vType id="emergency" vClass="emergency" guiShape="emergency"
+latAlignment="arbitrary" lcPushy="1"/>
+<flow id="myflow41" begin="0" end="3600" number="10" from="gneE0" to="gneE51" type="police"/>
+<flow id="myflow43" begin="0" end="3600" number="10" from="gneE0" to="gneE51" type="firebrigade"/>
+<flow id="myflow44" begin="0" end="3600" number="10" from="gneE0" to="gneE51" type="emergency"/>
+<flow id="myflow13" begin="0" end="3600" number="10" from="gneE52" to="gneE20" type="police"/>
+<flow id="myflow45" begin="0" end="3600" number="10" from="gneE52" to="gneE20" type="firebrigade"/>
+<flow id="myflow46" begin="0" end="3600" number="10" from="gneE52" to="gneE20" type="emergency"/>
+<flow id="myflow14" begin="0" end="3600" number="10" from="gneE64" to="gneE80" type="police"/>
+<flow id="myflow47" begin="0" end="3600" number="10" from="gneE64" to="gneE80" type="firebrigade"/>
+<flow id="myflow48" begin="0" end="3600" number="10" from="gneE64" to="gneE80" type="emergency"/>
+<flow id="myflow15" begin="0" end="3600" number="10" from="gneE81" to="gneE63" type="police"/>
+<flow id="myflow49" begin="0" end="3600" number="10" from="gneE81" to="gneE63" type="firebrigade"/>
+<flow id="myflow50" begin="0" end="3600" number="10" from="gneE81" to="gneE63" type="emergency"/>
+<flow id="myflow20" begin="0" end="3600" number="10" from="T1" to="gneE63" type="police"/>
+<flow id="myflow51" begin="0" end="3600" number="10" from="T1" to="gneE63" type="firebrigade"/>
+<flow id="myflow52" begin="0" end="3600" number="10" from="T1" to="gneE63" type="emergency"/>
+<flow id="myflow29" begin="0" end="3600" number="10" from="T2" to="gneE63" type="police"/>
+<flow id="myflow53" begin="0" end="3600" number="10" from="T2" to="gneE63" type="firebrigade"/>
+<flow id="myflow54" begin="0" end="3600" number="10" from="T2" to="gneE63" type="emergency"/>
+<flow id="myflow35" begin="0" end="3600" number="10" from="T8" to="gneE63" type="police"/>
+<flow id="myflow55" begin="0" end="3600" number="10" from="T8" to="gneE63" type="firebrigade"/>
+<flow id="myflow56" begin="0" end="3600" number="10" from="T8" to="gneE63" type="emergency"/>
 
-<vType id="taxi" vClass="taxi" guiShape="passenger/van" minGap="2"/>
-<flow id="myflow42" begin="0" end="3600" number="200" from="L14" to="L56" type="taxi"/>
-<flow id="myflow21" begin="0" end="3600" number="200" from="L65" to="L34" type="taxi"/>
-<flow id="myflow22" begin="0" end="3600" number="200" from="L23" to="D4" type="taxi"/>
-<flow id="myflow23" begin="0" end="3600" number="200" from="D3" to="L32" type="taxi"/>
-<flow id="myflow64" begin="0" end="3600" number="200" from="D3" to="L21" type="taxi"/>
-<flow id="myflow72" begin="0" end="3600" number="200" from="D3" to="L56" type="taxi"/>
-<flow id="myflow80" begin="0" end="3600" number="200" from="D3" to="L41" type="taxi"/>
-<flow id="myflow24" begin="0" end="3600" number="200" from="L12" to="D6" type="taxi"/>
-<flow id="myflow30" begin="0" end="3600" number="200" from="D5" to="L14" type="taxi"/>
-<flow id="myflow36" begin="0" end="3600" number="200" from="D2" to="D4" type="taxi"/>
-<flow id="myflow88" begin="0" end="3600" number="200" from="L23" to="L34" type="taxi"/>
-<flow id="myflow96" begin="0" end="3600" number="200" from="L43" to="D4" type="taxi"/>
-<flow id="myflow104" begin="0" end="3600" number="200" from="L65" to="L32" type="taxi"/>
+<vType id="taxi" vClass="taxi" guiShape="passenger/van" minGap="2"
+latAlignment="left" lcPushy="1"/>
+<flow id="myflow42" begin="0" end="3600" number="300" from="gneE0" to="gneE51" type="taxi"/>
+<flow id="myflow21" begin="0" end="3600" number="300" from="gneE52" to="gneE20" type="taxi"/>
+<flow id="myflow22" begin="0" end="3600" number="300" from="gneE64" to="gneE80" type="taxi"/>
+<flow id="myflow23" begin="0" end="3600" number="300" from="gneE81" to="gneE63" type="taxi"/>
+<flow id="myflow24" begin="0" end="3600" number="300" from="T1" to="gneE63" type="taxi"/>
+<flow id="myflow30" begin="0" end="3600" number="300" from="T2" to="gneE63" type="taxi"/>
+<flow id="myflow36" begin="0" end="3600" number="500" from="T8" to="gneE63" type="taxi"/>
+
+<vType id="pedestrian" vClass="pedestrian"/>
+<flow id="myflow57" begin="0" end="3600" number="50" from="gneE21" to="gneE22" type="pedestrian"/>
+<flow id="myflow58" begin="0" end="3600" number="50" from="gneE87" to="gneE86" type="pedestrian"/>
+<flow id="myflow59" begin="0" end="3600" number="50" from="gneE88" to="gneE89" type="pedestrian"/>
+<flow id="myflow60" begin="0" end="3600" number="50" from="gneE85" to="gneE84" type="pedestrian"/>
+<flow id="myflow61" begin="0" end="3600" number="50" from="gneE21" to="gneE84" type="pedestrian"/>
+<flow id="myflow62" begin="0" end="3600" number="50" from="gneE22" to="gneE86" type="pedestrian"/>
+<flow id="myflow63" begin="0" end="3600" number="50" from="gneE85" to="gneE88" type="pedestrian"/>
 </routes>

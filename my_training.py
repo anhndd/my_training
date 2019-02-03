@@ -9,6 +9,7 @@ from keras.layers import Input, Conv2D, Flatten, Dense, LeakyReLU, Average, Add,
 from keras.models import Model
 from keras.optimizers import Adam
 import tensorflow as tf
+from scipy.spatial.ckdtree import coo_entries
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -134,6 +135,7 @@ class DQNAgent:
 
     def act(self, state):
         if self.end_epsilon <= self.start_epsilon:
+            self.start_epsilon -= 0.99/10000
             return random.randrange(self.action_size)
         act_values = self.model.predict(state)
 
@@ -193,21 +195,21 @@ class SumoIntersection:
 
         cellLength = 2.7
         sizeMatrix = 60
-        sizeLaneMatric = sizeMatrix/2-3           #27
-        offset_in = 500-cellLength*sizeLaneMatric #427.1
+        sizeLaneMatric = sizeMatrix/2-12           #18
+        offset = 500-cellLength*sizeLaneMatric #427.1
         offset_out = cellLength*sizeLaneMatric    #72.9
         speedLimit = 14
 	    #print(traci.edge.getWaitingTime('gneE21'))
 	
         # junctionPosition = traci.junction.getPosition('0')[0]
-        vehicles_road1_in = traci.edge.getLastStepVehicleIDs('L53')
-        vehicles_road1_out = traci.edge.getLastStepVehicleIDs('L35')
-        vehicles_road2_in = traci.edge.getLastStepVehicleIDs('D3')
-        vehicles_road2_out = traci.edge.getLastStepVehicleIDs('D4')
-        vehicles_road3_in = traci.edge.getLastStepVehicleIDs('L43')
-        vehicles_road3_out = traci.edge.getLastStepVehicleIDs('L34')
-        vehicles_road4_in = traci.edge.getLastStepVehicleIDs('L23')
-        vehicles_road4_out = traci.edge.getLastStepVehicleIDs('L32')
+        vehicles_road1_in = traci.edge.getLastStepVehicleIDs('gneE21')
+        vehicles_road1_out = traci.edge.getLastStepVehicleIDs('gneE22')
+        vehicles_road2_in = traci.edge.getLastStepVehicleIDs('gneE86')
+        vehicles_road2_out = traci.edge.getLastStepVehicleIDs('gneE87')
+        vehicles_road3_in = traci.edge.getLastStepVehicleIDs('gneE89')
+        vehicles_road3_out = traci.edge.getLastStepVehicleIDs('gneE88')
+        vehicles_road4_in = traci.edge.getLastStepVehicleIDs('gneE85')
+        vehicles_road4_out = traci.edge.getLastStepVehicleIDs('gneE84')
 
         for i in range(sizeMatrix):
             positionMatrix.append([])
@@ -216,162 +218,526 @@ class SumoIntersection:
                 positionMatrix[i].append(0)
                 velocityMatrix[i].append(0)
 
-        index = 32
+        index = 42
+        offset = 97.34 - cellLength*sizeLaneMatric
         for v in vehicles_road1_in:
-            std = traci.vehicle.getLanePosition(v)-offset_in
-            startPos = int(math.ceil((std - traci.vehicle.getLength(v)) / cellLength)-1)
-            endPos = int(math.ceil(std / cellLength)-1)
-            if endPos > 26:
-                endPos = 26
-            if startPos > 26:
-                startPos = 26
-            elif startPos < 0:
-                startPos = 0
-            if endPos >= 0:
-                positionMatrix[index-traci.vehicle.getLaneIndex(v)][startPos] = 1
-                positionMatrix[index-traci.vehicle.getLaneIndex(v)][endPos] = 1
-                velocityMatrix[index - traci.vehicle.getLaneIndex(v)][startPos] = traci.vehicle.getSpeed(v)
-                velocityMatrix[index - traci.vehicle.getLaneIndex(v)][endPos] = traci.vehicle.getSpeed(v)
-                for i in range(startPos,endPos):
-                    positionMatrix[index - traci.vehicle.getLaneIndex(v)][i] = 1
-                    velocityMatrix[index - traci.vehicle.getLaneIndex(v)][i] = traci.vehicle.getSpeed(v)
+            if traci.vehicle.getVehicleClass(v) != 'pedestrian':
+                std = traci.vehicle.getLanePosition(v) - offset
+                if std >= 0:
+                    temp = std / cellLength
+                    endPos = int(temp)
+                    temp = (temp - endPos) / cellLength
+
+                    temp_y_start = (1.75 - (
+                            traci.vehicle.getLateralLanePosition(v) + traci.vehicle.getWidth(v) / 2)) / 0.875
+                    yStartPos = int(temp_y_start)
+
+                    temp_y_end = 1.75 - (traci.vehicle.getLateralLanePosition(v) - traci.vehicle.getWidth(v) / 2)
+                    temp_y_end = temp_y_end / 0.875
+                    yEndPos = int(temp_y_end)
+                    if temp > 0.25:
+                        endPos += 1
+                    if temp_y_start < 0:
+                        positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][endPos] = 1
+                    else:
+                        temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                        if temp_y_start2 < 0.75:
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][endPos] = 1
+                    temp_y_end = (temp_y_end - yEndPos) / 0.875
+                    if temp_y_end > 0.25:
+                        positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yEndPos][endPos] = 1
+                        for i in range(yStartPos, yEndPos + 1):
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][endPos] = 1
+                    else:
+                        for i in range(yStartPos, yEndPos):
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][endPos] = 1
+
+                    temp = (std - traci.vehicle.getLength(v)) / cellLength
+                    startPos = int(temp)
+                    temp = (temp - startPos) / cellLength
+                    if temp < 0.75:
+                        if startPos < 0 & endPos >= 0:
+                            startPos = 0
+                        if temp_y_start < 0:
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][startPos] = 1
+                        else:
+                            temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                            if temp_y_start2 < 0.75:
+                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][startPos] = 1
+                            else:
+                                yStartPos += 1
+                        if temp_y_end > 0.25:
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][startPos] = 1
+                            for i in range(yStartPos, yEndPos + 1):
+                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][startPos] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos + 1):
+                                    positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + j][i] = 1
+                        else:
+                            for i in range(yStartPos, yEndPos):
+                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][startPos] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos):
+                                    positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + j][i] = 1
+
+        offset = 82.58 - cellLength * sizeLaneMatric
         for v in vehicles_road2_in:
-            std = traci.vehicle.getLanePosition(v)-offset_in
-            startPos = int(math.ceil((std - traci.vehicle.getLength(v)) / cellLength)-1)
-            endPos = int(math.ceil(std / cellLength)-1)
-            if endPos > 26:
-                endPos = 26
-            if startPos > 26:
-                startPos = 26
-            elif startPos < 0:
-                startPos = 0
-            if endPos >= 0:
-                # print(traci.vehicle.getVehicleClass(v), traci.vehicle.getLanePosition(v),std,startPos,endPos)
-                positionMatrix[sizeMatrix-1-startPos][index-traci.vehicle.getLaneIndex(v)] = 1
-                positionMatrix[sizeMatrix-1-endPos][index-traci.vehicle.getLaneIndex(v)] = 1
-                velocityMatrix[sizeMatrix-1-startPos][index-traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
-                velocityMatrix[sizeMatrix-1-endPos][index-traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
-                for i in range(startPos,endPos):
-                    positionMatrix[sizeMatrix-1-i][index - traci.vehicle.getLaneIndex(v)] = 1
-                    velocityMatrix[sizeMatrix - 1 - i][index - traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
+            if traci.vehicle.getVehicleClass(v) != 'pedestrian':
+                std = traci.vehicle.getLanePosition(v) - offset
+                if std >= 0:
+                    # if traci.vehicle.getVehicleClass(v) == 'taxi':
+                    temp = std / cellLength
+                    endPos = int(temp)
+                    temp = (temp - endPos) / cellLength
+
+                    temp_y_start = (1.75 - (
+                            traci.vehicle.getLateralLanePosition(v) + traci.vehicle.getWidth(v) / 2)) / 0.875
+                    yStartPos = int(temp_y_start)
+
+                    temp_y_end = 1.75 - (
+                            traci.vehicle.getLateralLanePosition(v) - traci.vehicle.getWidth(v) / 2)
+                    temp_y_end = temp_y_end / 0.875
+                    yEndPos = int(temp_y_end)
+                    if temp > 0.25:
+                        endPos += 1
+                    if temp_y_start < 0:
+                        positionMatrix[sizeMatrix - 1 - endPos][
+                            index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos] = 1
+                    else:
+                        temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                        if temp_y_start2 < 0.75:
+                            positionMatrix[sizeMatrix - 1 - endPos][
+                                index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos] = 1
+                    temp_y_end = (temp_y_end - yEndPos) / 0.875
+                    if temp_y_end > 0.25:
+                        positionMatrix[sizeMatrix - 1 - endPos][index - traci.vehicle.getLaneIndex(v) * 4 + yEndPos] = 1
+                        for i in range(yStartPos, yEndPos + 1):
+                            positionMatrix[sizeMatrix - 1 - endPos][index - traci.vehicle.getLaneIndex(v) * 4 + i] = 1
+                    else:
+                        for i in range(yStartPos, yEndPos):
+                            positionMatrix[sizeMatrix - 1 - endPos][index - traci.vehicle.getLaneIndex(v) * 4 + i] = 1
+
+                    temp = (std - traci.vehicle.getLength(v)) / cellLength
+                    startPos = int(temp)
+                    temp = (temp - startPos) / cellLength
+                    if temp < 0.75:
+                        if startPos < 0 & endPos >= 0:
+                            startPos = 0
+                        if temp_y_start < 0:
+                            positionMatrix[sizeMatrix - 1 - startPos][
+                                index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos] = 1
+                        else:
+                            temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                            if temp_y_start2 < 0.75:
+                                positionMatrix[sizeMatrix - 1 - startPos][
+                                    index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos] = 1
+                            else:
+                                yStartPos += 1
+                        if temp_y_end > 0.25:
+                            positionMatrix[sizeMatrix - 1 - startPos][
+                                index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos] = 1
+                            for i in range(yStartPos, yEndPos + 1):
+                                positionMatrix[sizeMatrix - 1 - startPos][
+                                    index - traci.vehicle.getLaneIndex(v) * 4 + i] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos + 1):
+                                    positionMatrix[sizeMatrix - 1 - i][
+                                        index - traci.vehicle.getLaneIndex(v) * 4 + j] = 1
+                        else:
+                            for i in range(yStartPos, yEndPos):
+                                positionMatrix[sizeMatrix - 1 - startPos][
+                                    index - traci.vehicle.getLaneIndex(v) * 4 + i] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos):
+                                    positionMatrix[sizeMatrix - 1 - i][
+                                        index - traci.vehicle.getLaneIndex(v) * 4 + j] = 1
+
+        offset = cellLength*sizeLaneMatric
         for v in vehicles_road3_out:
-            std = offset_out - traci.vehicle.getLanePosition(v)
-            startPos = int(math.ceil((std - traci.vehicle.getLength(v)) / cellLength)-1)
-            endPos = int(math.ceil(std / cellLength)-1)
-            if endPos > 26:
-                endPos = 26
-            if startPos > 26:
-                startPos = 26
-            elif startPos < 0:
-                startPos = 0
-            if endPos >= 0:
-                # print(traci.vehicle.getVehicleClass(v), traci.vehicle.getLanePosition(v),std,startPos,endPos)
-                positionMatrix[index - traci.vehicle.getLaneIndex(v)][sizeMatrix-1-startPos] = 1
-                positionMatrix[index - traci.vehicle.getLaneIndex(v)][sizeMatrix-1-endPos] = 1
-                velocityMatrix[index - traci.vehicle.getLaneIndex(v)][sizeMatrix-1-startPos] = traci.vehicle.getSpeed(v)
-                velocityMatrix[index - traci.vehicle.getLaneIndex(v)][sizeMatrix-1-endPos] = traci.vehicle.getSpeed(v)
-                for i in range(startPos,endPos):
-                    positionMatrix[index - traci.vehicle.getLaneIndex(v)][sizeMatrix-1-i] = 1
-                    velocityMatrix[index - traci.vehicle.getLaneIndex(v)][sizeMatrix - 1 - i] = traci.vehicle.getSpeed(v)
+            if traci.vehicle.getVehicleClass(v) != 'pedestrian':
+                std = offset - traci.vehicle.getLanePosition(v)
+                if std >= 0:
+                    temp = (std+ traci.vehicle.getLength(v)) / cellLength
+                    endPos = int(temp)
+                    temp = (temp - endPos) / cellLength
+
+                    temp_y_start = (1.75 - (
+                            traci.vehicle.getLateralLanePosition(v) + traci.vehicle.getWidth(v) / 2)) / 0.875
+                    yStartPos = int(temp_y_start)
+
+                    temp_y_end = 1.75 - (traci.vehicle.getLateralLanePosition(v) - traci.vehicle.getWidth(v) / 2)
+                    temp_y_end = temp_y_end / 0.875
+                    yEndPos = int(temp_y_end)
+                    if temp > 0.25:
+                        endPos += 1
+                    if temp_y_start < 0:
+                        positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][sizeMatrix - 1 - endPos] = 1
+                    else:
+                        temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                        if temp_y_start2 < 0.75:
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][sizeMatrix - 1 - endPos] = 1
+                    temp_y_end = (temp_y_end - yEndPos) / 0.875
+                    if temp_y_end > 0.25:
+                        positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yEndPos][sizeMatrix - 1 - endPos] = 1
+                        for i in range(yStartPos, yEndPos + 1):
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][sizeMatrix - 1 - endPos] = 1
+                    else:
+                        for i in range(yStartPos, yEndPos):
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][sizeMatrix - 1 - endPos] = 1
+
+                    temp = (std) / cellLength
+                    startPos = int(temp)
+                    temp = (temp - startPos) / cellLength
+                    if temp < 0.75:
+                        if startPos < 0 & endPos >= 0:
+                            startPos = 0
+                        if temp_y_start < 0:
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][sizeMatrix - 1 - startPos] = 1
+                        else:
+                            temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                            if temp_y_start2 < 0.75:
+                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][sizeMatrix - 1 - startPos] = 1
+                            else:
+                                yStartPos += 1
+                        if temp_y_end > 0.25:
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][sizeMatrix - 1 - startPos] = 1
+                            for i in range(yStartPos, yEndPos + 1):
+                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][sizeMatrix - 1 - startPos] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos + 1):
+                                    positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + j][sizeMatrix - 1 - i] = 1
+                        else:
+                            for i in range(yStartPos, yEndPos):
+                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][sizeMatrix - 1 - startPos] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos):
+                                    positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + j][sizeMatrix - 1 - i] = 1
+
+        offset = cellLength * sizeLaneMatric
         for v in vehicles_road4_out:
-            std = offset_out - traci.vehicle.getLanePosition(v)
-            startPos = int(math.ceil((std - traci.vehicle.getLength(v)) / cellLength)-1)
-            endPos = int(math.ceil(std / cellLength)-1)
-            if endPos > 26:
-                endPos = 26
-            if startPos > 26:
-                startPos = 26
-            elif startPos < 0:
-                startPos = 0
-            if endPos >= 0:
-                # print(traci.vehicle.getVehicleClass(v), traci.vehicle.getLanePosition(v),std,startPos,endPos)
-                positionMatrix[startPos][index - traci.vehicle.getLaneIndex(v)] = 1
-                positionMatrix[endPos][index - traci.vehicle.getLaneIndex(v)] = 1
-                velocityMatrix[startPos][index - traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
-                velocityMatrix[endPos][index - traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
-                for i in range(startPos,endPos):
-                    positionMatrix[i][index - traci.vehicle.getLaneIndex(v)] = 1
-                    velocityMatrix[i][index - traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
+            if traci.vehicle.getVehicleClass(v) != 'pedestrian':
+                std = offset - traci.vehicle.getLanePosition(v)
+                if std >= 0:
+                    # if traci.vehicle.getVehicleClass(v) == 'taxi':
+                    temp = (std + traci.vehicle.getLength(v)) / cellLength
+                    endPos = int(temp)
+                    temp = (temp - endPos) / cellLength
 
-        index = 27
+                    temp_y_start = (1.75 - (traci.vehicle.getLateralLanePosition(v) + traci.vehicle.getWidth(v) / 2)) / 0.875
+                    yStartPos = int(temp_y_start)
+
+                    temp_y_end = 1.75 - (traci.vehicle.getLateralLanePosition(v) - traci.vehicle.getWidth(v) / 2)
+                    temp_y_end = temp_y_end / 0.875
+                    yEndPos = int(temp_y_end)
+                    if temp > 0.25:
+                        endPos += 1
+                    if temp_y_start < 0:
+                        positionMatrix[endPos][index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos] = 1
+                    else:
+                        temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                        if temp_y_start2 < 0.75:
+                            positionMatrix[endPos][index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos] = 1
+                    temp_y_end = (temp_y_end - yEndPos) / 0.875
+                    if temp_y_end > 0.25:
+                        positionMatrix[endPos][index - traci.vehicle.getLaneIndex(v) * 4 + yEndPos] = 1
+                        for i in range(yStartPos, yEndPos + 1):
+                            positionMatrix[endPos][index - traci.vehicle.getLaneIndex(v) * 4 + i] = 1
+                    else:
+                        for i in range(yStartPos, yEndPos):
+                            positionMatrix[endPos][index - traci.vehicle.getLaneIndex(v) * 4 + i] = 1
+
+                    temp = std / cellLength
+                    startPos = int(temp)
+                    temp = (temp - startPos) / cellLength
+                    if temp < 0.75:
+                        if startPos < 0 & endPos >= 0:
+                            startPos = 0
+
+                        if temp_y_start < 0:
+                            positionMatrix[startPos][index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos] = 1
+                        else:
+                            temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                            if temp_y_start2 < 0.75:
+                                positionMatrix[startPos][index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos] = 1
+                            else:
+                                yStartPos += 1
+                        if temp_y_end > 0.25:
+                            positionMatrix[startPos][index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos] = 1
+                            for i in range(yStartPos, yEndPos + 1):
+                                positionMatrix[startPos][index - traci.vehicle.getLaneIndex(v) * 4 + i] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos + 1):
+                                    positionMatrix[i][index - traci.vehicle.getLaneIndex(v) * 4 + j] = 1
+                        else:
+                            for i in range(yStartPos, yEndPos):
+                                positionMatrix[startPos][index - traci.vehicle.getLaneIndex(v) * 4 + i] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos):
+                                    positionMatrix[i][index - traci.vehicle.getLaneIndex(v) * 4 + j] = 1
+        index = 14
+        offset = cellLength * sizeLaneMatric
         for v in vehicles_road1_out:
-            std = offset_out - traci.vehicle.getLanePosition(v)
-            startPos = int(math.ceil((std - traci.vehicle.getLength(v)) / cellLength) - 1)
-            endPos = int(math.ceil(std / cellLength) - 1)
-            if endPos > 26:
-                endPos = 26
-            if startPos > 26:
-                startPos = 26
-            elif startPos < 0:
-                startPos = 0
-            if endPos >= 0:
-                positionMatrix[index + traci.vehicle.getLaneIndex(v)][startPos] = 1
-                positionMatrix[index + traci.vehicle.getLaneIndex(v)][endPos] = 1
-                velocityMatrix[index + traci.vehicle.getLaneIndex(v)][startPos] = traci.vehicle.getSpeed(v)
-                velocityMatrix[index + traci.vehicle.getLaneIndex(v)][endPos] = traci.vehicle.getSpeed(v)
-                for i in range(startPos, endPos):
-                    positionMatrix[index + traci.vehicle.getLaneIndex(v)][i] = 1
-                    velocityMatrix[index + traci.vehicle.getLaneIndex(v)][i] = traci.vehicle.getSpeed(v)
-        for v in vehicles_road2_out:
-            std = offset_out - traci.vehicle.getLanePosition(v)
-            startPos = int(math.ceil((std - traci.vehicle.getLength(v)) / cellLength) - 1)
-            endPos = int(math.ceil(std / cellLength) - 1)
-            if endPos > 26:
-                endPos = 26
-            if startPos > 26:
-                startPos = 26
-            elif startPos < 0:
-                startPos = 0
-            if endPos >= 0:
-                positionMatrix[sizeMatrix-1-startPos][index + traci.vehicle.getLaneIndex(v)] = 1
-                positionMatrix[sizeMatrix-1-endPos][index + traci.vehicle.getLaneIndex(v)] = 1
-                velocityMatrix[sizeMatrix - 1 - startPos][index + traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
-                velocityMatrix[sizeMatrix - 1 - endPos][index + traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
-                for i in range(startPos, endPos):
-                    positionMatrix[sizeMatrix-1-i][index + traci.vehicle.getLaneIndex(v)] = 1
-                    velocityMatrix[sizeMatrix - 1 - i][index + traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
-        for v in vehicles_road3_in:
-            std = traci.vehicle.getLanePosition(v)-offset_in
-            startPos = int(math.ceil((std - traci.vehicle.getLength(v)) / cellLength)-1)
-            endPos = int(math.ceil(std / cellLength)-1)
-            if endPos > 26:
-                endPos = 26
-            if startPos > 26:
-                startPos = 26
-            elif startPos < 0:
-                startPos = 0
-            if endPos >= 0:
-                # print(traci.vehicle.getVehicleClass(v), traci.vehicle.getLanePosition(v),std,startPos,endPos)
-                positionMatrix[index + traci.vehicle.getLaneIndex(v)][sizeMatrix-1-startPos] = 1
-                positionMatrix[index + traci.vehicle.getLaneIndex(v)][sizeMatrix-1-endPos] = 1
-                velocityMatrix[index + traci.vehicle.getLaneIndex(v)][sizeMatrix-1-startPos] = traci.vehicle.getSpeed(v)
-                velocityMatrix[index + traci.vehicle.getLaneIndex(v)][sizeMatrix-1-endPos] = traci.vehicle.getSpeed(v)
-                for i in range(startPos,endPos):
-                    positionMatrix[index + traci.vehicle.getLaneIndex(v)][sizeMatrix-1-i] = 1
-                    velocityMatrix[index + traci.vehicle.getLaneIndex(v)][sizeMatrix - 1 - i] = traci.vehicle.getSpeed(v)
-        for v in vehicles_road4_in:
-            std = traci.vehicle.getLanePosition(v)-offset_in
-            startPos = int(math.ceil((std - traci.vehicle.getLength(v)) / cellLength)-1)
-            endPos = int(math.ceil(std / cellLength)-1)
-            if endPos > 26:
-                endPos = 26
-            if startPos > 26:
-                startPos = 26
-            elif startPos < 0:
-                startPos = 0
-            if endPos >= 0:
-                # print(traci.vehicle.getVehicleClass(v), traci.vehicle.getLanePosition(v),std,startPos,endPos)
-                positionMatrix[startPos][index + traci.vehicle.getLaneIndex(v)] = 1
-                positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v)] = 1
-                velocityMatrix[startPos][index + traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
-                velocityMatrix[endPos][index + traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
-                for i in range(startPos,endPos):
-                    positionMatrix[i][index + traci.vehicle.getLaneIndex(v)] = 1
-                    velocityMatrix[i][index + traci.vehicle.getLaneIndex(v)] = traci.vehicle.getSpeed(v)
+            if traci.vehicle.getVehicleClass(v) != 'pedestrian':
+                std = offset - traci.vehicle.getLanePosition(v)
+                if std >= 0:
+                    temp = (std+ traci.vehicle.getLength(v)) / cellLength
+                    endPos = int(temp)
+                    temp = (temp - endPos) / cellLength
 
+                    temp_y_start = (1.75 - (
+                            traci.vehicle.getLateralLanePosition(v) + traci.vehicle.getWidth(v) / 2)) / 0.875
+                    yStartPos = int(temp_y_start)
+
+                    temp_y_end = 1.75 - (traci.vehicle.getLateralLanePosition(v) - traci.vehicle.getWidth(v) / 2)
+                    temp_y_end = temp_y_end / 0.875
+                    yEndPos = int(temp_y_end)
+                    if temp > 0.25:
+                        endPos += 1
+                    if temp_y_start < 0:
+                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][endPos] = 1
+                    else:
+                        temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                        if temp_y_start2 < 0.75:
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][endPos] = 1
+                    temp_y_end = (temp_y_end - yEndPos) / 0.875
+                    if temp_y_end > 0.25:
+                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yEndPos][endPos] = 1
+                        for i in range(yStartPos, yEndPos + 1):
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][endPos] = 1
+                    else:
+                        for i in range(yStartPos, yEndPos):
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][endPos] = 1
+
+                    temp = (std) / cellLength
+                    startPos = int(temp)
+                    temp = (temp - startPos) / cellLength
+                    if temp < 0.75:
+                        if startPos < 0 & endPos >= 0:
+                            startPos = 0
+                        if temp_y_start < 0:
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][startPos] = 1
+                        else:
+                            temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                            if temp_y_start2 < 0.75:
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][startPos] = 1
+                            else:
+                                yStartPos += 1
+                        if temp_y_end > 0.25:
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][startPos] = 1
+                            for i in range(yStartPos, yEndPos + 1):
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][startPos] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos + 1):
+                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-j][i] = 1
+                        else:
+                            for i in range(yStartPos, yEndPos):
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][startPos] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos):
+                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-j][i] = 1
+
+        for v in vehicles_road2_out:
+            if traci.vehicle.getVehicleClass(v) != 'pedestrian':
+                std = offset - traci.vehicle.getLanePosition(v)
+                if std >= 0:
+                    # if traci.vehicle.getVehicleClass(v) == 'taxi':
+                    temp = (std+ traci.vehicle.getLength(v)) / cellLength
+                    endPos = int(temp)
+                    temp = (temp - endPos) / cellLength
+
+                    temp_y_start = (1.75 - (
+                            traci.vehicle.getLateralLanePosition(v) + traci.vehicle.getWidth(v) / 2)) / 0.875
+                    yStartPos = int(temp_y_start)
+
+                    temp_y_end = 1.75 - (
+                            traci.vehicle.getLateralLanePosition(v) - traci.vehicle.getWidth(v) / 2)
+                    temp_y_end = temp_y_end / 0.875
+                    yEndPos = int(temp_y_end)
+                    if temp > 0.25:
+                        endPos += 1
+                    if temp_y_start < 0:
+                        positionMatrix[sizeMatrix - 1 - endPos][
+                            index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos] = 1
+                    else:
+                        temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                        if temp_y_start2 < 0.75:
+                            positionMatrix[sizeMatrix - 1 - endPos][
+                                index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos] = 1
+                    temp_y_end = (temp_y_end - yEndPos) / 0.875
+                    if temp_y_end > 0.25:
+                        positionMatrix[sizeMatrix - 1 - endPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3-yEndPos] = 1
+                        for i in range(yStartPos, yEndPos + 1):
+                            positionMatrix[sizeMatrix - 1 - endPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3-i] = 1
+                    else:
+                        for i in range(yStartPos, yEndPos):
+                            positionMatrix[sizeMatrix - 1 - endPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3-i] = 1
+
+                    temp = (std) / cellLength
+                    startPos = int(temp)
+                    temp = (temp - startPos) / cellLength
+                    if temp < 0.75:
+                        if startPos < 0 & endPos >= 0:
+                            startPos = 0
+
+                        if temp_y_start < 0:
+                            positionMatrix[sizeMatrix - 1 - startPos][
+                                index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos] = 1
+                        else:
+                            temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                            if temp_y_start2 < 0.75:
+                                positionMatrix[sizeMatrix - 1 - startPos][
+                                    index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos] = 1
+                            else:
+                                yStartPos += 1
+                        if temp_y_end > 0.25:
+                            positionMatrix[sizeMatrix - 1 - startPos][
+                                index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos] = 1
+                            for i in range(yStartPos, yEndPos + 1):
+                                positionMatrix[sizeMatrix - 1 - startPos][
+                                    index + traci.vehicle.getLaneIndex(v) * 4 + 3-i] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos + 1):
+                                    positionMatrix[sizeMatrix - 1 - i][
+                                        index + traci.vehicle.getLaneIndex(v) * 4 + 3-j] = 1
+                        else:
+                            for i in range(yStartPos, yEndPos):
+                                positionMatrix[sizeMatrix - 1 - startPos][
+                                    index + traci.vehicle.getLaneIndex(v) * 4 + 3-i] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos):
+                                    positionMatrix[sizeMatrix - 1 - i][
+                                        index + traci.vehicle.getLaneIndex(v) * 4 + 3-j] = 1
+
+        offset = 107.06 - cellLength*sizeLaneMatric
+        for v in vehicles_road3_in:
+            if traci.vehicle.getVehicleClass(v) != 'pedestrian':
+                std = traci.vehicle.getLanePosition(v) - offset
+                if std >= 0:
+                    temp = std / cellLength
+                    endPos = int(temp)
+                    temp = (temp - endPos) / cellLength
+
+                    temp_y_start = (1.75 - (
+                            traci.vehicle.getLateralLanePosition(v) + traci.vehicle.getWidth(v) / 2)) / 0.875
+                    yStartPos = int(temp_y_start)
+
+                    temp_y_end = 1.75 - (traci.vehicle.getLateralLanePosition(v) - traci.vehicle.getWidth(v) / 2)
+                    temp_y_end = temp_y_end / 0.875
+                    yEndPos = int(temp_y_end)
+                    if temp > 0.25:
+                        endPos += 1
+                    if temp_y_start < 0:
+                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][sizeMatrix - 1 - endPos] = 1
+                    else:
+                        temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                        if temp_y_start2 < 0.75:
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][sizeMatrix - 1 - endPos] = 1
+                    temp_y_end = (temp_y_end - yEndPos) / 0.875
+                    if temp_y_end > 0.25:
+                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yEndPos][sizeMatrix - 1 - endPos] = 1
+                        for i in range(yStartPos, yEndPos + 1):
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][sizeMatrix - 1 - endPos] = 1
+                    else:
+                        for i in range(yStartPos, yEndPos):
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][sizeMatrix - 1 - endPos] = 1
+
+                    temp = (std - traci.vehicle.getLength(v)) / cellLength
+                    startPos = int(temp)
+                    temp = (temp - startPos) / cellLength
+                    if temp < 0.75:
+                        if startPos < 0 & endPos >= 0:
+                            startPos = 0
+                        if temp_y_start < 0:
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][sizeMatrix - 1 - startPos] = 1
+                        else:
+                            temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                            if temp_y_start2 < 0.75:
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][sizeMatrix - 1 - startPos] = 1
+                            else:
+                                yStartPos += 1
+                        if temp_y_end > 0.25:
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][sizeMatrix - 1 - startPos] = 1
+                            for i in range(yStartPos, yEndPos + 1):
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][sizeMatrix - 1 - startPos] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos + 1):
+                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-j][sizeMatrix - 1 - i] = 1
+                        else:
+                            for i in range(yStartPos, yEndPos):
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][sizeMatrix - 1 - startPos] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos):
+                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-j][sizeMatrix - 1 - i] = 1
+
+        offset = 72.64 - cellLength * sizeLaneMatric
+        for v in vehicles_road4_in:
+            if traci.vehicle.getVehicleClass(v) != 'pedestrian':
+                std = traci.vehicle.getLanePosition(v) - offset
+                if std >= 0:
+                    # if traci.vehicle.getVehicleClass(v) == 'taxi':
+                    temp = std / cellLength
+                    endPos = int(temp)
+                    temp = (temp - endPos) / cellLength
+
+                    temp_y_start = (1.75 - (
+                            traci.vehicle.getLateralLanePosition(v) + traci.vehicle.getWidth(v) / 2)) / 0.875
+                    yStartPos = int(temp_y_start)
+
+                    temp_y_end = 1.75 - (
+                            traci.vehicle.getLateralLanePosition(v) - traci.vehicle.getWidth(v) / 2)
+                    temp_y_end = temp_y_end / 0.875
+                    yEndPos = int(temp_y_end)
+                    if temp > 0.25:
+                        endPos += 1
+                    if temp_y_start < 0:
+                        positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-yStartPos] = 1
+                    else:
+                        temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                        if temp_y_start2 < 0.75:
+                            positionMatrix[endPos][
+                                index + traci.vehicle.getLaneIndex(v) * 4 +3-yStartPos] = 1
+                    temp_y_end = (temp_y_end - yEndPos) / 0.875
+                    if temp_y_end > 0.25:
+                        positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-yEndPos] = 1
+                        for i in range(yStartPos, yEndPos + 1):
+                            positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-i] = 1
+                    else:
+                        for i in range(yStartPos, yEndPos):
+                            positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-i] = 1
+
+                    temp = (std - traci.vehicle.getLength(v)) / cellLength
+                    startPos = int(temp)
+                    temp = (temp - startPos) / cellLength
+                    if temp < 0.75:
+                        if startPos < 0 & endPos >= 0:
+                            startPos = 0
+
+                        if temp_y_start < 0:
+                            positionMatrix[startPos][
+                                index + traci.vehicle.getLaneIndex(v) * 4 +3-yStartPos] = 1
+                        else:
+                            temp_y_start2 = (temp_y_start - yStartPos) / 0.875
+                            if temp_y_start2 < 0.75:
+                                positionMatrix[startPos][
+                                    index + traci.vehicle.getLaneIndex(v) * 4 +3-yStartPos] = 1
+                            else:
+                                yStartPos += 1
+                        if temp_y_end > 0.25:
+                            positionMatrix[startPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-yStartPos] = 1
+                            for i in range(yStartPos, yEndPos + 1):
+                                positionMatrix[startPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-i] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos + 1):
+                                    positionMatrix[i][index + traci.vehicle.getLaneIndex(v) * 4 +3-j] = 1
+                        else:
+                            for i in range(yStartPos, yEndPos):
+                                positionMatrix[startPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-i] = 1
+                            for i in range(startPos + 1, endPos):
+                                for j in range(yStartPos, yEndPos):
+                                    positionMatrix[i][index + traci.vehicle.getLaneIndex(v) * 4 +3-j] = 1
         # for v in positionMatrix:
         #     print(v)
-        # for i in range(0,50):
+        # for i in range(0,60):
         #     s = ''
         #     for j in range(0, 60):
         #         s+=str(positionMatrix[i][j])
@@ -400,10 +766,10 @@ class SumoIntersection:
 
     def cal_waiting_time(self):
         waiting_time = 0
-        waiting_time += (traci.edge.getLastStepHaltingNumber('L53')
-                         + traci.edge.getLastStepHaltingNumber('L34')
-                         + traci.edge.getLastStepHaltingNumber('D3')
-                         + traci.edge.getLastStepHaltingNumber('L23'))
+        waiting_time += (traci.edge.getLastStepHaltingNumber('gneE21')
+                         + traci.edge.getLastStepHaltingNumber('gneE86')
+                         + traci.edge.getLastStepHaltingNumber('gneE89')
+                         + traci.edge.getLastStepHaltingNumber('gneE85'))
         return waiting_time
 
 def main():
@@ -415,6 +781,7 @@ def main():
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
     I = np.full((action_space, action_space), 0.5).reshape(1, action_space, action_space)
     action_time = [33, 33]
+    idLightControl = '4628048104'
     waiting_time_t = 0
     waiting_time_t1 = 0
     total_reward = 0
@@ -427,8 +794,8 @@ def main():
     sumo_cmd = [sumoBinary, "-c", sumoConfig]
     traci.start(sumo_cmd)
 
-    while traci.simulation.getMinExpectedNumber() > 0 and step < 100:#7000
-        traci.simulationStep()
+    while traci.simulation.getMinExpectedNumber() > 0:
+        traci.simulationStep()####################
         waiting_time = 0
         state = sumo_int.getState(I)
         action = agent.act(state)
@@ -441,27 +808,27 @@ def main():
 
         # print action_time[0]
         for j in range(action_time[0]):
-            traci.trafficlight.setPhase('3', 0)
+            traci.trafficlight.setPhase(idLightControl, 0)
             waiting_time += sumo_int.cal_waiting_time()
             traci.simulationStep()
 
-        yellow_time1 =  sumo_int.cal_yellow_phase(['L53','L34'], a_dec)
+        yellow_time1 =  sumo_int.cal_yellow_phase(['gneE21','gneE89'], a_dec)
         # print waiting_time#yellow_time1
         for j in range(yellow_time1):
-            traci.trafficlight.setPhase('3', 1)
+            traci.trafficlight.setPhase(idLightControl, 1)
             waiting_time += sumo_int.cal_waiting_time()
             traci.simulationStep()
 
         # print waiting_time#action_time[1]
         for j in range(action_time[1]):
-            traci.trafficlight.setPhase('3', 2)
+            traci.trafficlight.setPhase(idLightControl, 2)
             waiting_time += sumo_int.cal_waiting_time()
             traci.simulationStep()
 
-        yellow_time2 =  sumo_int.cal_yellow_phase(['D3','L23'], a_dec)
+        yellow_time2 =  sumo_int.cal_yellow_phase(['gneE86','gneE85'], a_dec)
         # print waiting_time#yellow_time2
         for j in range(yellow_time2):
-            traci.trafficlight.setPhase('3', 3)
+            traci.trafficlight.setPhase(idLightControl, 3)
             waiting_time += sumo_int.cal_waiting_time()
             traci.simulationStep()
 
@@ -474,10 +841,10 @@ def main():
         agent.remember(state, action, reward_t, new_state, False)
 
         i += 1;
-        # if len(agent.memory) > M & i > agent.tp:
+        if len(agent.memory) > M & i > agent.tp:
         # if len(agent.memory) > 100 & i > 1:
-        #     print 'begin'
-        #     print agent.replay()
+            print 'begin'
+            print agent.replay()
         print('-----------------------end simulation----------------------------')
         step += 1
     traci.close()
