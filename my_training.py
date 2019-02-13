@@ -17,16 +17,13 @@ if 'SUMO_HOME' in os.environ:
 else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
 
-sumoBinary = "/usr/bin/sumo-gui"
+sumoBinary = "/usr/bin/sumo"
 sumoConfig = "sumoconfig.sumoconfig"
 import traci
 
 class TargetDQNAgent:
     def __init__(self, action_size):
-        self.tp = 2000          # pre-training steps
         self.alpha = 0.0001     # target network update rate
-        self.gamma = 0.99       # discount factor
-        self.epsilon_r = 0.0001 # learning rate
         self.Beta = 0.01        # Leaky ReLU
         self.action_size = action_size
         self.model = self._build_model()
@@ -59,32 +56,16 @@ class TargetDQNAgent:
 
         return model
 
-    # def remember(self, state, action, reward, next_state, done):
-    #     self.memory.append((state, action, reward, next_state, done))
-    #
-    # def act(self, state):
-    #     if self.end_epsilon <= self.start_epsilon:
-    #         return random.randrange(self.action_size)
-    #     act_values = self.model.predict(state)
-    #
-    #     return np.argmax(act_values)  # returns action
-    #
-    def replay(self):
-        minibatch = random.sample(self.memory, self.minibatch_size)
-        for state, action, reward, next_state, done in minibatch:
-            target = reward
-            if not done:
-                target = (reward + self.gamma *
-                          np.amax(self.model.predict(next_state)[0]))
-            target_f = self.model.predict(state)
-            target_f[0][action] = target
-            self.model.fit(state, target_f, epochs=1, verbose=0)
-    #
-    # def load(self, name):
-    #     self.model.load_weights(name)
-    #
-    # def save(self, name):
-    #     self.model.save_weights(name)
+    def replay(self, primary_network_weights):
+        target_network_weights = self.model.get_weights()
+        # print target_network_weights[len(target_network_weights)-1]
+        # target_network_weights = self.alpha*target_network_weights + (1-self.alpha)*primary_network_weights
+
+        for i in range(len(target_network_weights)):
+            target_network_weights[i] = self.alpha*target_network_weights[i] + (1-self.alpha)*primary_network_weights[i]
+        # print 'new weight'
+        # print target_network_weights[len(target_network_weights)-1], primary_network_weights[len(target_network_weights)-1]
+        self.model.set_weights(target_network_weights)
 
 class DQNAgent:
     def __init__(self, M, action_size):
@@ -135,8 +116,10 @@ class DQNAgent:
 
     def act(self, state):
         if self.end_epsilon <= self.start_epsilon:
-            self.start_epsilon -= 0.99/10000
+            self.start_epsilon -= 0.99/self.step_epsilon
+            print self.start_epsilon
             return random.randrange(self.action_size)
+        print '---------------------------PREDICT---------------------------------------'
         act_values = self.model.predict(state)
 
         return np.argmax(act_values)  # returns action
@@ -144,32 +127,34 @@ class DQNAgent:
     def replay(self):
         minibatch = random.sample(self.memory, self.minibatch_size)
         ######################################################
-        Q_value = []
-        Q_target = []
+        J = 0
         for s, a, r, next_s, done in minibatch:
             if not done:
-                Q_value_list = self.model.predict(s)[0]
-                Q_value.append(Q_value_list[a])
+                Q_value_comma = self.model.predict(next_s)[0]
+                # Q_value = self.model.predict(s)[0][a]
+                #
+                next_a = np.argmax(Q_value_comma)
+                Q_target = r + self.gamma * self.targetDQN.model.predict(next_s)[0][next_a]
 
-                next_a = np.argmax(Q_value_list)
-                Q_target.append(r + self.gamma * self.targetDQN.model.predict(next_s)[0][next_a])
-                # print Q_value, Q_target
-                # Q_value = self.model.predict(s)
-                # # next_a = np.argmax(Q_value_list)
-                # Q_target = r + self.gamma * self.targetDQN.model.predict(next_s)[0]
-
-                # J_temp = Q_target - Q_value
-                # J += J_temp * J_temp
+                # J_temp = (Q_target - Q_value)
+                # J_temp += J_temp * J_temp
+                # J += J_temp
                 ##############################################
-        # J /= self.minibatch_size #.
-        #
-        #     target = (r + self.gamma *
-        #               np.amax(self.model.predict(next_s)[0]))
-        # target_f = self.model.predict(s)
-        # target_f[0][a] = target
-        #         self.model.fit(Q_target, Q_value, epochs=1, verbose=0)
-        input= np.array([Q_target, Q_value]).reshape(1,1,1,1)
-        self.model.fit(input, epochs=1, verbose=2)
+                # cach 1...................
+                target_f = self.model.predict(s)
+                target_f[0][a] = Q_target
+                self.model.fit(s, target_f, epochs=1, verbose=0)
+                # cach 1...................
+
+        # J /= self.minibatch_size
+
+
+        self.targetDQN.replay(self.model.get_weights())
+
+                # import keras
+                # keras.callbacks.History()
+        # input= np.array([Q_target, Q_value]).reshape(1,1,1,1)
+        # self.model.fit(input, epochs=1, verbose=2)
 
     def load(self, name):
         self.model.load_weights(name)
@@ -786,7 +771,6 @@ def main():
     waiting_time_t1 = 0
     total_reward = 0
     reward_t = 0
-    step = 0
     i = 0
     agent = DQNAgent(M, action_space)
 
@@ -795,7 +779,7 @@ def main():
     traci.start(sumo_cmd)
 
     while traci.simulation.getMinExpectedNumber() > 0:
-        traci.simulationStep()####################
+        traci.simulationStep()
         waiting_time = 0
         state = sumo_int.getState(I)
         action = agent.act(state)
@@ -841,12 +825,12 @@ def main():
         agent.remember(state, action, reward_t, new_state, False)
 
         i += 1;
+        print '------------------------------------------- ',i, len(agent.memory),' --------------------'
         if len(agent.memory) > M & i > agent.tp:
-        # if len(agent.memory) > 100 & i > 1:
-            print 'begin'
-            print agent.replay()
-        print('-----------------------end simulation----------------------------')
-        step += 1
+            print '-------------------------------------------BEGIN REPLAY------------------------'
+            agent.replay()
+        # print reward_t, 'in step ', i
+        # print('-----------------------end simulation----------------------------')
     traci.close()
 
 if __name__ == '__main__':

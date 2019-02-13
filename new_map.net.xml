@@ -31,12 +31,12 @@
     <location netOffset="0.00,0.00" convBoundary="-1250.10,249.90,0.00,1250.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
 
     <edge id="D1" from="2" to="11" priority="1">
-        <lane id="D1_0" index="0" disallow="taxi bus truck" speed="13.89" length="559.02" shape="-519.29,1249.58 -998.24,1010.10"/>
-        <lane id="D1_1" index="1" speed="13.89" length="559.02" shape="-517.81,1246.63 -996.77,1007.15"/>
-        <lane id="D1_2" index="2" disallow="motorcycle bicycle" speed="13.89" length="559.02" shape="-516.33,1243.68 -995.29,1004.20"/>
+        <lane id="D1_0" index="0" disallow="taxi bus truck" speed="13.89" width="3.50" length="559.02" shape="-519.29,1249.58 -998.24,1010.10"/>
+        <lane id="D1_1" index="1" speed="13.89" width="3.50" length="559.02" shape="-517.81,1246.63 -996.77,1007.15"/>
+        <lane id="D1_2" index="2" disallow="motorcycle bicycle" speed="13.89" width="3.50" length="559.02" shape="-516.33,1243.68 -995.29,1004.20"/>
     </edge>
     <edge id="D115" from="11" to="5" priority="1">
-        <lane id="D115_0" index="0" disallow="taxi bus truck" speed="13.89" length="250.00" shape="-1008.25,993.91 -1008.25,761.35"/>
+        <lane id="D115_0" index="0" disallow="taxi bus truck" speed="13.89" width="3.50" length="250.00" shape="-1008.25,993.91 -1008.25,761.35"/>
         <lane id="D115_1" index="1" speed="13.89" length="250.00" shape="-1004.95,993.91 -1004.95,761.35"/>
         <lane id="D115_2" index="2" disallow="motorcycle bicycle" speed="13.89" length="250.00" shape="-1001.65,993.91 -1001.65,761.35"/>
     </edge>
