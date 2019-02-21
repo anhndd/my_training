@@ -4,8 +4,9 @@ import random
 import numpy as np
 import time
 import math
+import h5py
 from collections import deque
-from keras.layers import Input, Conv2D, Flatten, Dense, LeakyReLU, Average, Add, Dot, Subtract
+from keras.layers import Input, Conv2D, Flatten, Dense, LeakyReLU, Average, Add, Dot, Subtract, Multiply
 from keras.models import Model
 from keras.optimizers import Adam
 import tensorflow as tf
@@ -21,6 +22,7 @@ sumoBinary = "/usr/bin/sumo"
 sumoConfig = "sumoconfig.sumoconfig"
 import traci
 
+count_action_dif_default = 0
 class TargetDQNAgent:
     def __init__(self, action_size):
         self.alpha = 0.0001     # target network update rate
@@ -51,7 +53,10 @@ class TargetDQNAgent:
 
         Q_value = Add()([value, A_subtract])
 
-        model = Model(inputs=[input_1,input_2], outputs=[Q_value])
+        input_3 = Input(shape=(5,))
+        Output = Multiply()([input_3, Q_value])
+
+        model = Model(inputs=[input_1, input_2, input_3], outputs=[Output])
         # model.compile(optimizer= Adam(lr=self.epsilon_r), loss='mse')
 
         return model
@@ -68,9 +73,9 @@ class TargetDQNAgent:
         self.model.set_weights(target_network_weights)
 
 class DQNAgent:
-    def __init__(self, M, action_size):
+    def __init__(self, M, action_size, B):
         self.memory = deque(maxlen=M)
-        self.minibatch_size = 64
+        self.minibatch_size = B
         self.start_epsilon = 1
         self.end_epsilon = 0.01
         self.step_epsilon = 10000
@@ -106,7 +111,12 @@ class DQNAgent:
 
         Q_value = Add()([value, A_subtract])
 
-        model = Model(inputs=[input_1,input_2], outputs=[Q_value])
+        input_3 = Input(shape=(5,))
+        Output = Multiply()([input_3, Q_value])
+        # if (input_3[0][0] == 0) & (Q_value[np.argmax(input_3[0])] < 0):
+        #     Q_value[np.argmax(input_3[0])] *= -1
+
+        model = Model(inputs=[input_1, input_2, input_3], outputs=[Output])
         model.compile(optimizer= Adam(lr=self.epsilon_r), loss='mse')
 
         return model
@@ -117,17 +127,23 @@ class DQNAgent:
     def act(self, state):
         if self.end_epsilon <= self.start_epsilon:
             self.start_epsilon -= 0.99/self.step_epsilon
-            print self.start_epsilon
+            # print self.start_epsilon
+            if (state[2][0][0] == 0):
+                return np.argmax(state[2])
             return random.randrange(self.action_size)
-        print '---------------------------PREDICT---------------------------------------'
+        # print '---------------------------PREDICT---------------------------------------'
         act_values = self.model.predict(state)
-
-        return np.argmax(act_values)  # returns action
+        # print state[2][0], np.argmax(state[2][0])
+        if (state[2][0][0]== 0):
+            return np.argmax(state[2])
+        return np.argmax(act_values[0])  # returns action
 
     def replay(self):
         minibatch = random.sample(self.memory, self.minibatch_size)
         ######################################################
         J = 0
+        # S_list = []
+        # Q_list = []
         for s, a, r, next_s, done in minibatch:
             if not done:
                 Q_value_comma = self.model.predict(next_s)[0]
@@ -145,10 +161,9 @@ class DQNAgent:
                 target_f[0][a] = Q_target
                 self.model.fit(s, target_f, epochs=1, verbose=0)
                 # cach 1...................
-
         # J /= self.minibatch_size
-
-
+        # self.model.train_on_batch(X, Y)
+        # self.model.fit(S_list, Q_list, epochs=1, verbose=0)
         self.targetDQN.replay(self.model.get_weights())
 
                 # import keras
@@ -174,7 +189,7 @@ class SumoIntersection:
             sys.exit(
                 "please declare environment variable 'SUMO_HOME' as the root directory of your sumo installation (it should contain folders 'bin', 'tools' and 'docs')")
 
-    def getState(self, I):
+    def getState(self, I, action, tentative_action):
         positionMatrix = []
         velocityMatrix = []
 
@@ -241,7 +256,7 @@ class SumoIntersection:
                     startPos = int(temp)
                     temp = (temp - startPos) / cellLength
                     if temp < 0.75:
-                        if startPos < 0 & endPos >= 0:
+                        if (startPos < 0) & (endPos >= 0):
                             startPos = 0
                         if temp_y_start < 0:
                             positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][startPos] = 1
@@ -306,7 +321,7 @@ class SumoIntersection:
                     startPos = int(temp)
                     temp = (temp - startPos) / cellLength
                     if temp < 0.75:
-                        if startPos < 0 & endPos >= 0:
+                        if (startPos < 0) & (endPos >= 0):
                             startPos = 0
                         if temp_y_start < 0:
                             positionMatrix[sizeMatrix - 1 - startPos][
@@ -374,7 +389,7 @@ class SumoIntersection:
                     startPos = int(temp)
                     temp = (temp - startPos) / cellLength
                     if temp < 0.75:
-                        if startPos < 0 & endPos >= 0:
+                        if (startPos < 0) & (endPos >= 0):
                             startPos = 0
                         if temp_y_start < 0:
                             positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][sizeMatrix - 1 - startPos] = 1
@@ -398,7 +413,7 @@ class SumoIntersection:
                                 for j in range(yStartPos, yEndPos):
                                     positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + j][sizeMatrix - 1 - i] = 1
 
-        offset = cellLength * sizeLaneMatric
+        # offset = cellLength * sizeLaneMatric
         for v in vehicles_road4_out:
             if traci.vehicle.getVehicleClass(v) != 'pedestrian':
                 std = offset - traci.vehicle.getLanePosition(v)
@@ -435,7 +450,7 @@ class SumoIntersection:
                     startPos = int(temp)
                     temp = (temp - startPos) / cellLength
                     if temp < 0.75:
-                        if startPos < 0 & endPos >= 0:
+                        if (startPos < 0) & (endPos >= 0):
                             startPos = 0
 
                         if temp_y_start < 0:
@@ -460,7 +475,7 @@ class SumoIntersection:
                                 for j in range(yStartPos, yEndPos):
                                     positionMatrix[i][index - traci.vehicle.getLaneIndex(v) * 4 + j] = 1
         index = 14
-        offset = cellLength * sizeLaneMatric
+        # offset = cellLength * sizeLaneMatric
         for v in vehicles_road1_out:
             if traci.vehicle.getVehicleClass(v) != 'pedestrian':
                 std = offset - traci.vehicle.getLanePosition(v)
@@ -497,7 +512,7 @@ class SumoIntersection:
                     startPos = int(temp)
                     temp = (temp - startPos) / cellLength
                     if temp < 0.75:
-                        if startPos < 0 & endPos >= 0:
+                        if (startPos < 0) & (endPos >= 0):
                             startPos = 0
                         if temp_y_start < 0:
                             positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][startPos] = 1
@@ -561,7 +576,7 @@ class SumoIntersection:
                     startPos = int(temp)
                     temp = (temp - startPos) / cellLength
                     if temp < 0.75:
-                        if startPos < 0 & endPos >= 0:
+                        if (startPos < 0) & (endPos >= 0):
                             startPos = 0
 
                         if temp_y_start < 0:
@@ -630,7 +645,7 @@ class SumoIntersection:
                     startPos = int(temp)
                     temp = (temp - startPos) / cellLength
                     if temp < 0.75:
-                        if startPos < 0 & endPos >= 0:
+                        if (startPos < 0) & (endPos >= 0):
                             startPos = 0
                         if temp_y_start < 0:
                             positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][sizeMatrix - 1 - startPos] = 1
@@ -694,7 +709,7 @@ class SumoIntersection:
                     startPos = int(temp)
                     temp = (temp - startPos) / cellLength
                     if temp < 0.75:
-                        if startPos < 0 & endPos >= 0:
+                        if (startPos < 0) & (endPos >= 0):
                             startPos = 0
 
                         if temp_y_start < 0:
@@ -720,6 +735,7 @@ class SumoIntersection:
                             for i in range(startPos + 1, endPos):
                                 for j in range(yStartPos, yEndPos):
                                     positionMatrix[i][index + traci.vehicle.getLaneIndex(v) * 4 +3-j] = 1
+
         # for v in positionMatrix:
         #     print(v)
         # for i in range(0,60):
@@ -735,8 +751,13 @@ class SumoIntersection:
         output = np.transpose(outputMatrix)#np.array(outputMatrix)
         output = output.reshape(1,60,60,2)
         # print output.tolist()
-
-        return [output, I]
+        global count_action_dif_default
+        if count_action_dif_default > 1:
+            tentative_action_matrix = tentative_action[0]
+        else:
+            tentative_action_matrix = tentative_action[action]
+        # print  tentative_action_matrix
+        return [output, I, tentative_action_matrix]
 
     def cal_yellow_phase(self, id_list, a_dec):
         v_on_road = []
@@ -749,89 +770,114 @@ class SumoIntersection:
 
         return int(np.amax(v_on_road)/a_dec)
 
-    def cal_waiting_time(self):
-        waiting_time = 0
-        waiting_time += (traci.edge.getLastStepHaltingNumber('gneE21')
-                         + traci.edge.getLastStepHaltingNumber('gneE86')
-                         + traci.edge.getLastStepHaltingNumber('gneE89')
-                         + traci.edge.getLastStepHaltingNumber('gneE85'))
-        return waiting_time
+def cal_waiting_time():
+    waiting_time = 0
+    waiting_time += (traci.edge.getLastStepHaltingNumber('gneE21')
+                     + traci.edge.getLastStepHaltingNumber('gneE86')
+                     + traci.edge.getLastStepHaltingNumber('gneE89')
+                     + traci.edge.getLastStepHaltingNumber('gneE85'))
+    return waiting_time
 
 def main():
     # Control code here
     M = 20000 #size memory
+    B = 64 #minibatch_size
     a_dec = 4.5 # m/s^2
     phase_number = 2
     action_space = phase_number * 2 + 1
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
+    tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space),np.asarray([0,0,1,0,0]).reshape(1, action_space),
+                        np.asarray([0,1,0,0,0]).reshape(1, action_space),np.asarray([0,0,0,0,1]).reshape(1, action_space),
+                        np.asarray([0,0,0,1,0]).reshape(1, action_space)]
+    global count_action_dif_default
     I = np.full((action_space, action_space), 0.5).reshape(1, action_space, action_space)
-    action_time = [33, 33]
     idLightControl = '4628048104'
     waiting_time_t = 0
-    waiting_time_t1 = 0
-    total_reward = 0
-    reward_t = 0
     i = 0
-    agent = DQNAgent(M, action_space)
+    agent = DQNAgent(M, action_space, B)
+    try:
+        agent.load('Models/reinf_traf_control_v3.h5')
+    except:
+        print('No models found')
 
     sumo_int = SumoIntersection()
-    sumo_cmd = [sumoBinary, "-c", sumoConfig]
-    traci.start(sumo_cmd)
 
-    while traci.simulation.getMinExpectedNumber() > 0:
-        traci.simulationStep()
-        waiting_time = 0
-        state = sumo_int.getState(I)
-        action = agent.act(state)
-        for j in range(phase_number):
-            action_time[j] += action_policy[action][j]
-            if action_time[j] < 0:
-                action_time[j] = 0
-            elif action_time[j] > 60:
-                action_time[j] = 60
-
-        # print action_time[0]
-        for j in range(action_time[0]):
-            traci.trafficlight.setPhase(idLightControl, 0)
-            waiting_time += sumo_int.cal_waiting_time()
+    episodes = 2000
+    sumo_cmd = [sumoBinary, "-c", sumoConfig, '--start']
+    for e in range(episodes):
+        traci.start(sumo_cmd)
+        action = 0
+        count_action_dif_default = 0
+        action_time = [33,33]
+        zstep = 0
+        if i > 20000:
+            break
+        while (traci.simulation.getMinExpectedNumber() > 0) & (zstep < 700):
             traci.simulationStep()
+            waiting_time = 0
+            state = sumo_int.getState(I, action, tentative_action)
+            # print '------------------------------------------- ', action,state[2], ' --------------------'
+            action = agent.act(state)
+            if action != 0:
+                count_action_dif_default += 1
+            # print '------------------------------------------- ', action, ' --------------------'
+            for j in range(phase_number):
+                action_time[j] += action_policy[action][j]
+                if action_time[j] < 0:
+                    action_time[j] = 0
+                elif action_time[j] > 60:
+                    action_time[j] = 60
 
-        yellow_time1 =  sumo_int.cal_yellow_phase(['gneE21','gneE89'], a_dec)
-        # print waiting_time#yellow_time1
-        for j in range(yellow_time1):
-            traci.trafficlight.setPhase(idLightControl, 1)
-            waiting_time += sumo_int.cal_waiting_time()
-            traci.simulationStep()
+            # print action_time[0]
+            for j in range(action_time[0]):
+                traci.trafficlight.setPhase(idLightControl, 0)
+                waiting_time += cal_waiting_time()
+                traci.simulationStep()
 
-        # print waiting_time#action_time[1]
-        for j in range(action_time[1]):
-            traci.trafficlight.setPhase(idLightControl, 2)
-            waiting_time += sumo_int.cal_waiting_time()
-            traci.simulationStep()
+            yellow_time1 = sumo_int.cal_yellow_phase(['gneE21', 'gneE89'], a_dec)
+            # print waiting_time#yellow_time1
+            for j in range(yellow_time1):
+                traci.trafficlight.setPhase(idLightControl, 1)
+                waiting_time += cal_waiting_time()
+                traci.simulationStep()
 
-        yellow_time2 =  sumo_int.cal_yellow_phase(['gneE86','gneE85'], a_dec)
-        # print waiting_time#yellow_time2
-        for j in range(yellow_time2):
-            traci.trafficlight.setPhase(idLightControl, 3)
-            waiting_time += sumo_int.cal_waiting_time()
-            traci.simulationStep()
+            # print waiting_time#action_time[1]
+            for j in range(action_time[1]):
+                traci.trafficlight.setPhase(idLightControl, 2)
+                waiting_time += cal_waiting_time()
+                traci.simulationStep()
 
-        waiting_time_t1 = waiting_time
-        reward_t = waiting_time_t - waiting_time_t1
-        # print waiting_time_t, waiting_time_t1, reward_t
-        waiting_time_t = waiting_time_t1
+            yellow_time2 = sumo_int.cal_yellow_phase(['gneE86', 'gneE85'], a_dec)
+            # print waiting_time#yellow_time2
+            for j in range(yellow_time2):
+                traci.trafficlight.setPhase(idLightControl, 3)
+                waiting_time += cal_waiting_time()
+                traci.simulationStep()
 
-        new_state = sumo_int.getState(I)
-        agent.remember(state, action, reward_t, new_state, False)
+            waiting_time_t1 = waiting_time
+            reward_t = waiting_time_t - waiting_time_t1
+            # print waiting_time_t, waiting_time_t1, reward_t
+            waiting_time_t = waiting_time_t1
 
-        i += 1;
-        print '------------------------------------------- ',i, len(agent.memory),' --------------------'
-        if len(agent.memory) > M & i > agent.tp:
-            print '-------------------------------------------BEGIN REPLAY------------------------'
-            agent.replay()
-        # print reward_t, 'in step ', i
-        # print('-----------------------end simulation----------------------------')
-    traci.close()
+            new_state = sumo_int.getState(I, action, tentative_action)
+            agent.remember(state, action, reward_t, new_state, False)
+
+            i += 1;
+            zstep+=1
+            print '------------------------------------------- ', i, action_time, ' --------------------'
+            if count_action_dif_default == 2:
+                count_action_dif_default = 0
+                action = 0
+            if (len(agent.memory) > B) & (i > agent.tp):
+                # if len(agent.memory) > 100 & (i > 1):
+                #     print '-------------------------------------------BEGIN REPLAY------------------------'
+                agent.replay()
+            # print reward_t, 'in step ', i
+            # print('-----------------------end simulation----------------------------')
+        agent.save('Models/reinf_traf_control_v3.h5')
+        traci.close(wait=False)
+
 
 if __name__ == '__main__':
     main()
+sys.stdout.flush()
