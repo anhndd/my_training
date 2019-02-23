@@ -151,3 +151,12 @@ sudo add-apt-repository ppa:sumo/stable
 sudo apt-get update
 sudo apt-get install sumo sumo-tools sumo-doc
 
+#####
+    log = open('Logs_result/log-model.txt', 'w')
+
+log.write('action - ' + str(i) + ', total waiting time - ' +
+                 str(waiting_time)  + ', average waiting time - ' +
+                 str((action_time[0]+action_time[1])/2) +'('+str(action_time[0])+','+str(yellow_time1)+','+str(action_time[1])+','+str(yellow_time2)+')'+ ', reward - ' + str(reward_t) +'\n')
+
+    log.close()
+

@@ -46,10 +46,10 @@ def main():
     waiting_time_t1 = 0
     reward_t = 0
     i = 0
-    try:
-        agent.load('Models/reinf_traf_control_v2.h5')
-    except:
-        print('No models found')
+    # try:
+    #     agent.load('Models/reinf_traf_control_v2.h5')
+    # except:
+    #     print('No models found')
 
     sumo_cmd = [sumoBinary, "-c", sumoConfig]
     traci.start(sumo_cmd)

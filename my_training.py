@@ -18,11 +18,11 @@ if 'SUMO_HOME' in os.environ:
 else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
 
-sumoBinary = "/usr/bin/sumo"
+sumoBinary = "/usr/bin/sumo-gui"
 sumoConfig = "sumoconfig.sumoconfig"
 import traci
 
-count_action_dif_default = 0
+# count_action_dif_default = 0
 class TargetDQNAgent:
     def __init__(self, action_size):
         self.alpha = 0.0001     # target network update rate
@@ -79,6 +79,7 @@ class DQNAgent:
         self.start_epsilon = 1
         self.end_epsilon = 0.01
         self.step_epsilon = 10000
+        self.epsilon_decay = (self.start_epsilon - self.end_epsilon) / self.step_epsilon
         self.tp = 2000          # pre-training steps
         self.alpha = 0.0001     # target network update rate
         self.gamma = 0.99       # discount factor
@@ -124,19 +125,31 @@ class DQNAgent:
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
-    def act(self, state):
-        if self.end_epsilon <= self.start_epsilon:
-            self.start_epsilon -= 0.99/self.step_epsilon
-            # print self.start_epsilon
-            if (state[2][0][0] == 0):
-                return np.argmax(state[2])
-            return random.randrange(self.action_size)
-        # print '---------------------------PREDICT---------------------------------------'
-        act_values = self.model.predict(state)
-        # print state[2][0], np.argmax(state[2][0])
-        if (state[2][0][0]== 0):
+    # def act(self, state):
+    #     if self.end_epsilon <= self.start_epsilon:
+    #         self.start_epsilon -= 0.99/self.step_epsilon
+    #         # print self.start_epsilon
+    #         if (state[2][0][0] == 0):
+    #             return np.argmax(state[2])
+    #         return random.randrange(self.action_size)
+    #     # print '---------------------------PREDICT---------------------------------------'
+    #     act_values = self.model.predict(state)
+    #     # print state[2][0], np.argmax(state[2][0])
+    #     if (state[2][0][0]== 0):
+    #         return np.argmax(state[2])
+    #     return np.argmax(act_values[0])  # returns action
+
+    def act(self,state):
+        self.start_epsilon -= self.epsilon_decay
+        # print state[2][0]
+        if (state[2][0][1] == 0):
             return np.argmax(state[2])
-        return np.argmax(act_values[0])  # returns action
+        if np.random.rand() <= self.start_epsilon:
+            return random.randrange(self.action_size)
+        else:
+            act_values = self.model.predict(state)
+            # print state[2][0], np.argmax(state[2][0])
+            return np.argmax(act_values[0])  # returns action
 
     def replay(self):
         minibatch = random.sample(self.memory, self.minibatch_size)
@@ -751,12 +764,14 @@ class SumoIntersection:
         output = np.transpose(outputMatrix)#np.array(outputMatrix)
         output = output.reshape(1,60,60,2)
         # print output.tolist()
-        global count_action_dif_default
-        if count_action_dif_default > 1:
-            tentative_action_matrix = tentative_action[0]
-        else:
-            tentative_action_matrix = tentative_action[action]
+        # global count_action_dif_default
+        # if count_action_dif_default > 1:
+        #     tentative_action_matrix = tentative_action[0]
+        #     count_action_dif_default = 0
+        # else:
+        #     tentative_action_matrix = tentative_action[action]
         # print  tentative_action_matrix
+        tentative_action_matrix = tentative_action[action]
         return [output, I, tentative_action_matrix]
 
     def cal_yellow_phase(self, id_list, a_dec):
@@ -786,17 +801,20 @@ def main():
     phase_number = 2
     action_space = phase_number * 2 + 1
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
-    tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space),np.asarray([0,0,1,0,0]).reshape(1, action_space),
-                        np.asarray([0,1,0,0,0]).reshape(1, action_space),np.asarray([0,0,0,0,1]).reshape(1, action_space),
-                        np.asarray([0,0,0,1,0]).reshape(1, action_space)]
-    global count_action_dif_default
+    # tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space),np.asarray([0,0,1,0,0]).reshape(1, action_space),
+    #                     np.asarray([0,1,0,0,0]).reshape(1, action_space),np.asarray([0,0,0,0,1]).reshape(1, action_space),
+    #                     np.asarray([0,0,0,1,0]).reshape(1, action_space)]
+    tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space),np.asarray([1,0,0,0,0]).reshape(1, action_space),
+                        np.asarray([1,0,0,0,0]).reshape(1, action_space),np.asarray([1,0,0,0,0]).reshape(1, action_space),
+                        np.asarray([1,0,0,0,0]).reshape(1, action_space)]
+    # global count_action_dif_default
     I = np.full((action_space, action_space), 0.5).reshape(1, action_space, action_space)
     idLightControl = '4628048104'
     waiting_time_t = 0
     i = 0
     agent = DQNAgent(M, action_space, B)
     try:
-        agent.load('Models/reinf_traf_control_v3.h5')
+        agent.load('Models/reinf_traf_control_v4.h5')
     except:
         print('No models found')
 
@@ -807,19 +825,19 @@ def main():
     for e in range(episodes):
         traci.start(sumo_cmd)
         action = 0
-        count_action_dif_default = 0
+        # count_action_dif_default = 0
         action_time = [33,33]
         zstep = 0
+        state = sumo_int.getState(I, action, tentative_action)
         if i > 20000:
             break
         while (traci.simulation.getMinExpectedNumber() > 0) & (zstep < 700):
             traci.simulationStep()
             waiting_time = 0
-            state = sumo_int.getState(I, action, tentative_action)
             # print '------------------------------------------- ', action,state[2], ' --------------------'
             action = agent.act(state)
-            if action != 0:
-                count_action_dif_default += 1
+            # if action != 0:
+            #     count_action_dif_default += 1
             # print '------------------------------------------- ', action, ' --------------------'
             for j in range(phase_number):
                 action_time[j] += action_policy[action][j]
@@ -860,21 +878,19 @@ def main():
             waiting_time_t = waiting_time_t1
 
             new_state = sumo_int.getState(I, action, tentative_action)
+            state = new_state
             agent.remember(state, action, reward_t, new_state, False)
 
-            i += 1;
+            i += 1
             zstep+=1
             print '------------------------------------------- ', i, action_time, ' --------------------'
-            if count_action_dif_default == 2:
-                count_action_dif_default = 0
-                action = 0
             if (len(agent.memory) > B) & (i > agent.tp):
                 # if len(agent.memory) > 100 & (i > 1):
                 #     print '-------------------------------------------BEGIN REPLAY------------------------'
                 agent.replay()
             # print reward_t, 'in step ', i
             # print('-----------------------end simulation----------------------------')
-        agent.save('Models/reinf_traf_control_v3.h5')
+        agent.save('Models/reinf_traf_control_v4.h5')
         traci.close(wait=False)
 
 

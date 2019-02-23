@@ -6,15 +6,11 @@ import time
 import math
 import h5py
 from collections import deque
-from keras.layers import Input, Conv2D, Flatten, Dense, LeakyReLU, Average, Add, Dot, Subtract
+from keras.layers import Input, Conv2D, Flatten, Dense, LeakyReLU, Average, Add, Dot, Subtract, Multiply
 from keras.models import Model
 from keras.optimizers import Adam
 import tensorflow as tf
 from scipy.spatial.ckdtree import coo_entries
-
-# lib draw line
-# import matplotlib.pyplot as plt
-# import pandas as pd
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -26,10 +22,13 @@ sumoBinary = "/usr/bin/sumo-gui"
 sumoConfig = "sumoconfig.sumoconfig"
 import traci
 
+count_action_dif_default = 0
+
+
 class TargetDQNAgent:
     def __init__(self, action_size):
-        self.alpha = 0.0001     # target network update rate
-        self.Beta = 0.01        # Leaky ReLU
+        self.alpha = 0.0001  # target network update rate
+        self.Beta = 0.01  # Leaky ReLU
         self.action_size = action_size
         self.model = self._build_model()
 
@@ -41,9 +40,9 @@ class TargetDQNAgent:
         #                     dilation_rate=(1, 1), activation=None, use_bias=True, kernel_initializer='glorot_uniform',
         #                     bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None,
         #                     activity_regularizer=None, kernel_constraint=None, bias_constraint=None)
-        x1 = Conv2D(32, (4, 4), strides=(2, 2),padding='Same', activation=LeakyReLU(alpha=self.Beta))(input_1)
-        x1 = Conv2D(64, (2, 2), strides=(2, 2),padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
-        x1 = Conv2D(128, (2, 2), strides=(1, 1),padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
+        x1 = Conv2D(32, (4, 4), strides=(2, 2), padding='Same', activation=LeakyReLU(alpha=self.Beta))(input_1)
+        x1 = Conv2D(64, (2, 2), strides=(2, 2), padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
+        x1 = Conv2D(128, (2, 2), strides=(1, 1), padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
         x1 = Flatten()(x1)
         x1 = Dense(128, activation=LeakyReLU(alpha=self.Beta))(x1)
         x1_value = Dense(64, activation=LeakyReLU(alpha=self.Beta))(x1)
@@ -56,7 +55,10 @@ class TargetDQNAgent:
 
         Q_value = Add()([value, A_subtract])
 
-        model = Model(inputs=[input_1,input_2], outputs=[Q_value])
+        input_3 = Input(shape=(5,))
+        Output = Multiply()([input_3, Q_value])
+
+        model = Model(inputs=[input_1, input_2, input_3], outputs=[Output])
         # model.compile(optimizer= Adam(lr=self.epsilon_r), loss='mse')
 
         return model
@@ -67,10 +69,12 @@ class TargetDQNAgent:
         # target_network_weights = self.alpha*target_network_weights + (1-self.alpha)*primary_network_weights
 
         for i in range(len(target_network_weights)):
-            target_network_weights[i] = self.alpha*target_network_weights[i] + (1-self.alpha)*primary_network_weights[i]
+            target_network_weights[i] = self.alpha * target_network_weights[i] + (1 - self.alpha) * \
+                                        primary_network_weights[i]
         # print 'new weight'
         # print target_network_weights[len(target_network_weights)-1], primary_network_weights[len(target_network_weights)-1]
         self.model.set_weights(target_network_weights)
+
 
 class DQNAgent:
     def __init__(self, M, action_size, B):
@@ -79,11 +83,11 @@ class DQNAgent:
         self.start_epsilon = 1
         self.end_epsilon = 0.01
         self.step_epsilon = 10000
-        self.tp = 2000          # pre-training steps
-        self.alpha = 0.0001     # target network update rate
-        self.gamma = 0.99       # discount factor
-        self.epsilon_r = 0.0001 # learning rate
-        self.Beta = 0.01        # Leaky ReLU
+        self.tp = 2000  # pre-training steps
+        self.alpha = 0.0001  # target network update rate
+        self.gamma = 0.99  # discount factor
+        self.epsilon_r = 0.0001  # learning rate
+        self.Beta = 0.01  # Leaky ReLU
         self.action_size = action_size
         self.model = self._build_model()
         self.targetDQN = TargetDQNAgent(self.action_size)
@@ -96,9 +100,9 @@ class DQNAgent:
         #                     dilation_rate=(1, 1), activation=None, use_bias=True, kernel_initializer='glorot_uniform',
         #                     bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None,
         #                     activity_regularizer=None, kernel_constraint=None, bias_constraint=None)
-        x1 = Conv2D(32, (4, 4), strides=(2, 2),padding='Same', activation=LeakyReLU(alpha=self.Beta))(input_1)
-        x1 = Conv2D(64, (2, 2), strides=(2, 2),padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
-        x1 = Conv2D(128, (2, 2), strides=(1, 1),padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
+        x1 = Conv2D(32, (4, 4), strides=(2, 2), padding='Same', activation=LeakyReLU(alpha=self.Beta))(input_1)
+        x1 = Conv2D(64, (2, 2), strides=(2, 2), padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
+        x1 = Conv2D(128, (2, 2), strides=(1, 1), padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
         x1 = Flatten()(x1)
         x1 = Dense(128, activation=LeakyReLU(alpha=self.Beta))(x1)
         x1_value = Dense(64, activation=LeakyReLU(alpha=self.Beta))(x1)
@@ -111,8 +115,13 @@ class DQNAgent:
 
         Q_value = Add()([value, A_subtract])
 
-        model = Model(inputs=[input_1,input_2], outputs=[Q_value])
-        model.compile(optimizer= Adam(lr=self.epsilon_r), loss='mse')
+        input_3 = Input(shape=(5,))
+        Output = Multiply()([input_3, Q_value])
+        # if (input_3[0][0] == 0) & (Q_value[np.argmax(input_3[0])] < 0):
+        #     Q_value[np.argmax(input_3[0])] *= -1
+
+        model = Model(inputs=[input_1, input_2, input_3], outputs=[Output])
+        model.compile(optimizer=Adam(lr=self.epsilon_r), loss='mse')
 
         return model
 
@@ -121,12 +130,17 @@ class DQNAgent:
 
     def act(self, state):
         # if self.end_epsilon <= self.start_epsilon:
-        #     self.start_epsilon -= 0.99/self.step_epsilon
-        #     print self.start_epsilon
+        #     self.start_epsilon -= 0.99 / self.step_epsilon
+        #     # print self.start_epsilon
+        #     if (state[2][0][0] == 0):
+        #         return np.argmax(state[2])
         #     return random.randrange(self.action_size)
         # print '---------------------------PREDICT---------------------------------------'
         act_values = self.model.predict(state)
-        return np.argmax(act_values)  # returns action
+        print state[2][0], state[2][0][0],np.argmax(state[2][0])
+        if (state[2][0][0] == 0):
+            return np.argmax(state[2])
+        return np.argmax(act_values[0])  # returns action
 
     def replay(self):
         minibatch = random.sample(self.memory, self.minibatch_size)
@@ -149,18 +163,15 @@ class DQNAgent:
                 # cach 1...................
                 target_f = self.model.predict(s)
                 target_f[0][a] = Q_target
-                # S_list.append(s)
-                # Q_list.append(target_f)
                 self.model.fit(s, target_f, epochs=1, verbose=0)
                 # cach 1...................
-
         # J /= self.minibatch_size
-
+        # self.model.train_on_batch(X, Y)
         # self.model.fit(S_list, Q_list, epochs=1, verbose=0)
         self.targetDQN.replay(self.model.get_weights())
 
-                # import keras
-                # keras.callbacks.History()
+        # import keras
+        # keras.callbacks.History()
         # input= np.array([Q_target, Q_value]).reshape(1,1,1,1)
         # self.model.fit(input, epochs=1, verbose=2)
 
@@ -169,6 +180,7 @@ class DQNAgent:
 
     def save(self, name):
         self.model.save_weights(name)
+
 
 class SumoIntersection:
     def __init__(self):
@@ -182,18 +194,18 @@ class SumoIntersection:
             sys.exit(
                 "please declare environment variable 'SUMO_HOME' as the root directory of your sumo installation (it should contain folders 'bin', 'tools' and 'docs')")
 
-    def getState(self, I):
+    def getState(self, I, action, tentative_action):
         positionMatrix = []
         velocityMatrix = []
 
         cellLength = 2.7
         sizeMatrix = 60
-        sizeLaneMatric = sizeMatrix/2-12           #18
-        offset = 500-cellLength*sizeLaneMatric #427.1
-        offset_out = cellLength*sizeLaneMatric    #72.9
+        sizeLaneMatric = sizeMatrix / 2 - 12  # 18
+        offset = 500 - cellLength * sizeLaneMatric  # 427.1
+        offset_out = cellLength * sizeLaneMatric  # 72.9
         speedLimit = 14
-	    #print(traci.edge.getWaitingTime('gneE21'))
-	
+        # print(traci.edge.getWaitingTime('gneE21'))
+
         # junctionPosition = traci.junction.getPosition('0')[0]
         vehicles_road1_in = traci.edge.getLastStepVehicleIDs('gneE21')
         vehicles_road1_out = traci.edge.getLastStepVehicleIDs('gneE22')
@@ -212,7 +224,7 @@ class SumoIntersection:
                 velocityMatrix[i].append(0)
 
         index = 42
-        offset = 97.34 - cellLength*sizeLaneMatric
+        offset = 97.34 - cellLength * sizeLaneMatric
         for v in vehicles_road1_in:
             if traci.vehicle.getVehicleClass(v) != 'pedestrian':
                 std = traci.vehicle.getLanePosition(v) - offset
@@ -345,12 +357,12 @@ class SumoIntersection:
                                     positionMatrix[sizeMatrix - 1 - i][
                                         index - traci.vehicle.getLaneIndex(v) * 4 + j] = 1
 
-        offset = cellLength*sizeLaneMatric
+        offset = cellLength * sizeLaneMatric
         for v in vehicles_road3_out:
             if traci.vehicle.getVehicleClass(v) != 'pedestrian':
                 std = offset - traci.vehicle.getLanePosition(v)
                 if std >= 0:
-                    temp = (std+ traci.vehicle.getLength(v)) / cellLength
+                    temp = (std + traci.vehicle.getLength(v)) / cellLength
                     endPos = int(temp)
                     temp = (temp - endPos) / cellLength
 
@@ -364,11 +376,13 @@ class SumoIntersection:
                     if temp > 0.25:
                         endPos += 1
                     if temp_y_start < 0:
-                        positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][sizeMatrix - 1 - endPos] = 1
+                        positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][
+                            sizeMatrix - 1 - endPos] = 1
                     else:
                         temp_y_start2 = (temp_y_start - yStartPos) / 0.875
                         if temp_y_start2 < 0.75:
-                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][sizeMatrix - 1 - endPos] = 1
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][
+                                sizeMatrix - 1 - endPos] = 1
                     temp_y_end = (temp_y_end - yEndPos) / 0.875
                     if temp_y_end > 0.25:
                         positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yEndPos][sizeMatrix - 1 - endPos] = 1
@@ -385,28 +399,35 @@ class SumoIntersection:
                         if (startPos < 0) & (endPos >= 0):
                             startPos = 0
                         if temp_y_start < 0:
-                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][sizeMatrix - 1 - startPos] = 1
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][
+                                sizeMatrix - 1 - startPos] = 1
                         else:
                             temp_y_start2 = (temp_y_start - yStartPos) / 0.875
                             if temp_y_start2 < 0.75:
-                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][sizeMatrix - 1 - startPos] = 1
+                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][
+                                    sizeMatrix - 1 - startPos] = 1
                             else:
                                 yStartPos += 1
                         if temp_y_end > 0.25:
-                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][sizeMatrix - 1 - startPos] = 1
+                            positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + yStartPos][
+                                sizeMatrix - 1 - startPos] = 1
                             for i in range(yStartPos, yEndPos + 1):
-                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][sizeMatrix - 1 - startPos] = 1
+                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][
+                                    sizeMatrix - 1 - startPos] = 1
                             for i in range(startPos + 1, endPos):
                                 for j in range(yStartPos, yEndPos + 1):
-                                    positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + j][sizeMatrix - 1 - i] = 1
+                                    positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + j][
+                                        sizeMatrix - 1 - i] = 1
                         else:
                             for i in range(yStartPos, yEndPos):
-                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][sizeMatrix - 1 - startPos] = 1
+                                positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + i][
+                                    sizeMatrix - 1 - startPos] = 1
                             for i in range(startPos + 1, endPos):
                                 for j in range(yStartPos, yEndPos):
-                                    positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + j][sizeMatrix - 1 - i] = 1
+                                    positionMatrix[index - traci.vehicle.getLaneIndex(v) * 4 + j][
+                                        sizeMatrix - 1 - i] = 1
 
-        offset = cellLength * sizeLaneMatric
+        # offset = cellLength * sizeLaneMatric
         for v in vehicles_road4_out:
             if traci.vehicle.getVehicleClass(v) != 'pedestrian':
                 std = offset - traci.vehicle.getLanePosition(v)
@@ -416,7 +437,8 @@ class SumoIntersection:
                     endPos = int(temp)
                     temp = (temp - endPos) / cellLength
 
-                    temp_y_start = (1.75 - (traci.vehicle.getLateralLanePosition(v) + traci.vehicle.getWidth(v) / 2)) / 0.875
+                    temp_y_start = (1.75 - (
+                                traci.vehicle.getLateralLanePosition(v) + traci.vehicle.getWidth(v) / 2)) / 0.875
                     yStartPos = int(temp_y_start)
 
                     temp_y_end = 1.75 - (traci.vehicle.getLateralLanePosition(v) - traci.vehicle.getWidth(v) / 2)
@@ -468,12 +490,12 @@ class SumoIntersection:
                                 for j in range(yStartPos, yEndPos):
                                     positionMatrix[i][index - traci.vehicle.getLaneIndex(v) * 4 + j] = 1
         index = 14
-        offset = cellLength * sizeLaneMatric
+        # offset = cellLength * sizeLaneMatric
         for v in vehicles_road1_out:
             if traci.vehicle.getVehicleClass(v) != 'pedestrian':
                 std = offset - traci.vehicle.getLanePosition(v)
                 if std >= 0:
-                    temp = (std+ traci.vehicle.getLength(v)) / cellLength
+                    temp = (std + traci.vehicle.getLength(v)) / cellLength
                     endPos = int(temp)
                     temp = (temp - endPos) / cellLength
 
@@ -487,19 +509,19 @@ class SumoIntersection:
                     if temp > 0.25:
                         endPos += 1
                     if temp_y_start < 0:
-                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][endPos] = 1
+                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos][endPos] = 1
                     else:
                         temp_y_start2 = (temp_y_start - yStartPos) / 0.875
                         if temp_y_start2 < 0.75:
-                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][endPos] = 1
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos][endPos] = 1
                     temp_y_end = (temp_y_end - yEndPos) / 0.875
                     if temp_y_end > 0.25:
-                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yEndPos][endPos] = 1
+                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yEndPos][endPos] = 1
                         for i in range(yStartPos, yEndPos + 1):
-                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][endPos] = 1
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i][endPos] = 1
                     else:
                         for i in range(yStartPos, yEndPos):
-                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][endPos] = 1
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i][endPos] = 1
 
                     temp = (std) / cellLength
                     startPos = int(temp)
@@ -508,33 +530,33 @@ class SumoIntersection:
                         if (startPos < 0) & (endPos >= 0):
                             startPos = 0
                         if temp_y_start < 0:
-                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][startPos] = 1
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos][startPos] = 1
                         else:
                             temp_y_start2 = (temp_y_start - yStartPos) / 0.875
                             if temp_y_start2 < 0.75:
-                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][startPos] = 1
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos][startPos] = 1
                             else:
                                 yStartPos += 1
                         if temp_y_end > 0.25:
-                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][startPos] = 1
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos][startPos] = 1
                             for i in range(yStartPos, yEndPos + 1):
-                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][startPos] = 1
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i][startPos] = 1
                             for i in range(startPos + 1, endPos):
                                 for j in range(yStartPos, yEndPos + 1):
-                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-j][i] = 1
+                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - j][i] = 1
                         else:
                             for i in range(yStartPos, yEndPos):
-                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][startPos] = 1
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i][startPos] = 1
                             for i in range(startPos + 1, endPos):
                                 for j in range(yStartPos, yEndPos):
-                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-j][i] = 1
+                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - j][i] = 1
 
         for v in vehicles_road2_out:
             if traci.vehicle.getVehicleClass(v) != 'pedestrian':
                 std = offset - traci.vehicle.getLanePosition(v)
                 if std >= 0:
                     # if traci.vehicle.getVehicleClass(v) == 'taxi':
-                    temp = (std+ traci.vehicle.getLength(v)) / cellLength
+                    temp = (std + traci.vehicle.getLength(v)) / cellLength
                     endPos = int(temp)
                     temp = (temp - endPos) / cellLength
 
@@ -550,20 +572,23 @@ class SumoIntersection:
                         endPos += 1
                     if temp_y_start < 0:
                         positionMatrix[sizeMatrix - 1 - endPos][
-                            index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos] = 1
+                            index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos] = 1
                     else:
                         temp_y_start2 = (temp_y_start - yStartPos) / 0.875
                         if temp_y_start2 < 0.75:
                             positionMatrix[sizeMatrix - 1 - endPos][
-                                index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos] = 1
+                                index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos] = 1
                     temp_y_end = (temp_y_end - yEndPos) / 0.875
                     if temp_y_end > 0.25:
-                        positionMatrix[sizeMatrix - 1 - endPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3-yEndPos] = 1
+                        positionMatrix[sizeMatrix - 1 - endPos][
+                            index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yEndPos] = 1
                         for i in range(yStartPos, yEndPos + 1):
-                            positionMatrix[sizeMatrix - 1 - endPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3-i] = 1
+                            positionMatrix[sizeMatrix - 1 - endPos][
+                                index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i] = 1
                     else:
                         for i in range(yStartPos, yEndPos):
-                            positionMatrix[sizeMatrix - 1 - endPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3-i] = 1
+                            positionMatrix[sizeMatrix - 1 - endPos][
+                                index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i] = 1
 
                     temp = (std) / cellLength
                     startPos = int(temp)
@@ -574,34 +599,34 @@ class SumoIntersection:
 
                         if temp_y_start < 0:
                             positionMatrix[sizeMatrix - 1 - startPos][
-                                index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos] = 1
+                                index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos] = 1
                         else:
                             temp_y_start2 = (temp_y_start - yStartPos) / 0.875
                             if temp_y_start2 < 0.75:
                                 positionMatrix[sizeMatrix - 1 - startPos][
-                                    index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos] = 1
+                                    index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos] = 1
                             else:
                                 yStartPos += 1
                         if temp_y_end > 0.25:
                             positionMatrix[sizeMatrix - 1 - startPos][
-                                index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos] = 1
+                                index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos] = 1
                             for i in range(yStartPos, yEndPos + 1):
                                 positionMatrix[sizeMatrix - 1 - startPos][
-                                    index + traci.vehicle.getLaneIndex(v) * 4 + 3-i] = 1
+                                    index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i] = 1
                             for i in range(startPos + 1, endPos):
                                 for j in range(yStartPos, yEndPos + 1):
                                     positionMatrix[sizeMatrix - 1 - i][
-                                        index + traci.vehicle.getLaneIndex(v) * 4 + 3-j] = 1
+                                        index + traci.vehicle.getLaneIndex(v) * 4 + 3 - j] = 1
                         else:
                             for i in range(yStartPos, yEndPos):
                                 positionMatrix[sizeMatrix - 1 - startPos][
-                                    index + traci.vehicle.getLaneIndex(v) * 4 + 3-i] = 1
+                                    index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i] = 1
                             for i in range(startPos + 1, endPos):
                                 for j in range(yStartPos, yEndPos):
                                     positionMatrix[sizeMatrix - 1 - i][
-                                        index + traci.vehicle.getLaneIndex(v) * 4 + 3-j] = 1
+                                        index + traci.vehicle.getLaneIndex(v) * 4 + 3 - j] = 1
 
-        offset = 107.06 - cellLength*sizeLaneMatric
+        offset = 107.06 - cellLength * sizeLaneMatric
         for v in vehicles_road3_in:
             if traci.vehicle.getVehicleClass(v) != 'pedestrian':
                 std = traci.vehicle.getLanePosition(v) - offset
@@ -620,19 +645,24 @@ class SumoIntersection:
                     if temp > 0.25:
                         endPos += 1
                     if temp_y_start < 0:
-                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][sizeMatrix - 1 - endPos] = 1
+                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos][
+                            sizeMatrix - 1 - endPos] = 1
                     else:
                         temp_y_start2 = (temp_y_start - yStartPos) / 0.875
                         if temp_y_start2 < 0.75:
-                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][sizeMatrix - 1 - endPos] = 1
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos][
+                                sizeMatrix - 1 - endPos] = 1
                     temp_y_end = (temp_y_end - yEndPos) / 0.875
                     if temp_y_end > 0.25:
-                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yEndPos][sizeMatrix - 1 - endPos] = 1
+                        positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yEndPos][
+                            sizeMatrix - 1 - endPos] = 1
                         for i in range(yStartPos, yEndPos + 1):
-                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][sizeMatrix - 1 - endPos] = 1
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i][
+                                sizeMatrix - 1 - endPos] = 1
                     else:
                         for i in range(yStartPos, yEndPos):
-                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][sizeMatrix - 1 - endPos] = 1
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i][
+                                sizeMatrix - 1 - endPos] = 1
 
                     temp = (std - traci.vehicle.getLength(v)) / cellLength
                     startPos = int(temp)
@@ -641,26 +671,33 @@ class SumoIntersection:
                         if (startPos < 0) & (endPos >= 0):
                             startPos = 0
                         if temp_y_start < 0:
-                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][sizeMatrix - 1 - startPos] = 1
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos][
+                                sizeMatrix - 1 - startPos] = 1
                         else:
                             temp_y_start2 = (temp_y_start - yStartPos) / 0.875
                             if temp_y_start2 < 0.75:
-                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][sizeMatrix - 1 - startPos] = 1
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos][
+                                    sizeMatrix - 1 - startPos] = 1
                             else:
                                 yStartPos += 1
                         if temp_y_end > 0.25:
-                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-yStartPos][sizeMatrix - 1 - startPos] = 1
+                            positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos][
+                                sizeMatrix - 1 - startPos] = 1
                             for i in range(yStartPos, yEndPos + 1):
-                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][sizeMatrix - 1 - startPos] = 1
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i][
+                                    sizeMatrix - 1 - startPos] = 1
                             for i in range(startPos + 1, endPos):
                                 for j in range(yStartPos, yEndPos + 1):
-                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-j][sizeMatrix - 1 - i] = 1
+                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - j][
+                                        sizeMatrix - 1 - i] = 1
                         else:
                             for i in range(yStartPos, yEndPos):
-                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-i][sizeMatrix - 1 - startPos] = 1
+                                positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i][
+                                    sizeMatrix - 1 - startPos] = 1
                             for i in range(startPos + 1, endPos):
                                 for j in range(yStartPos, yEndPos):
-                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3-j][sizeMatrix - 1 - i] = 1
+                                    positionMatrix[index + traci.vehicle.getLaneIndex(v) * 4 + 3 - j][
+                                        sizeMatrix - 1 - i] = 1
 
         offset = 72.64 - cellLength * sizeLaneMatric
         for v in vehicles_road4_in:
@@ -683,20 +720,20 @@ class SumoIntersection:
                     if temp > 0.25:
                         endPos += 1
                     if temp_y_start < 0:
-                        positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-yStartPos] = 1
+                        positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos] = 1
                     else:
                         temp_y_start2 = (temp_y_start - yStartPos) / 0.875
                         if temp_y_start2 < 0.75:
                             positionMatrix[endPos][
-                                index + traci.vehicle.getLaneIndex(v) * 4 +3-yStartPos] = 1
+                                index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos] = 1
                     temp_y_end = (temp_y_end - yEndPos) / 0.875
                     if temp_y_end > 0.25:
-                        positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-yEndPos] = 1
+                        positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yEndPos] = 1
                         for i in range(yStartPos, yEndPos + 1):
-                            positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-i] = 1
+                            positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i] = 1
                     else:
                         for i in range(yStartPos, yEndPos):
-                            positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-i] = 1
+                            positionMatrix[endPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i] = 1
 
                     temp = (std - traci.vehicle.getLength(v)) / cellLength
                     startPos = int(temp)
@@ -707,27 +744,28 @@ class SumoIntersection:
 
                         if temp_y_start < 0:
                             positionMatrix[startPos][
-                                index + traci.vehicle.getLaneIndex(v) * 4 +3-yStartPos] = 1
+                                index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos] = 1
                         else:
                             temp_y_start2 = (temp_y_start - yStartPos) / 0.875
                             if temp_y_start2 < 0.75:
                                 positionMatrix[startPos][
-                                    index + traci.vehicle.getLaneIndex(v) * 4 +3-yStartPos] = 1
+                                    index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos] = 1
                             else:
                                 yStartPos += 1
                         if temp_y_end > 0.25:
-                            positionMatrix[startPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-yStartPos] = 1
+                            positionMatrix[startPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3 - yStartPos] = 1
                             for i in range(yStartPos, yEndPos + 1):
-                                positionMatrix[startPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-i] = 1
+                                positionMatrix[startPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i] = 1
                             for i in range(startPos + 1, endPos):
                                 for j in range(yStartPos, yEndPos + 1):
-                                    positionMatrix[i][index + traci.vehicle.getLaneIndex(v) * 4 +3-j] = 1
+                                    positionMatrix[i][index + traci.vehicle.getLaneIndex(v) * 4 + 3 - j] = 1
                         else:
                             for i in range(yStartPos, yEndPos):
-                                positionMatrix[startPos][index + traci.vehicle.getLaneIndex(v) * 4 +3-i] = 1
+                                positionMatrix[startPos][index + traci.vehicle.getLaneIndex(v) * 4 + 3 - i] = 1
                             for i in range(startPos + 1, endPos):
                                 for j in range(yStartPos, yEndPos):
-                                    positionMatrix[i][index + traci.vehicle.getLaneIndex(v) * 4 +3-j] = 1
+                                    positionMatrix[i][index + traci.vehicle.getLaneIndex(v) * 4 + 3 - j] = 1
+
         # for v in positionMatrix:
         #     print(v)
         # for i in range(0,60):
@@ -740,11 +778,17 @@ class SumoIntersection:
         #     print(v)
 
         outputMatrix = [positionMatrix, velocityMatrix]
-        output = np.transpose(outputMatrix)#np.array(outputMatrix)
-        output = output.reshape(1,60,60,2)
+        output = np.transpose(outputMatrix)  # np.array(outputMatrix)
+        output = output.reshape(1, 60, 60, 2)
         # print output.tolist()
-
-        return [output, I]
+        global count_action_dif_default
+        if count_action_dif_default > 1:
+            tentative_action_matrix = tentative_action[0]
+            count_action_dif_default = 0
+        else:
+            tentative_action_matrix = tentative_action[action]
+        # print  tentative_action_matrix
+        return [output, I, tentative_action_matrix]
 
     def cal_yellow_phase(self, id_list, a_dec):
         v_on_road = []
@@ -755,7 +799,8 @@ class SumoIntersection:
         if not v_on_road:
             v_on_road.append(0)
 
-        return int(np.amax(v_on_road)/a_dec)
+        return int(np.amax(v_on_road) / a_dec)
+
 
 def cal_waiting_time():
     waiting_time = 0
@@ -765,86 +810,106 @@ def cal_waiting_time():
                      + traci.edge.getLastStepHaltingNumber('gneE85'))
     return waiting_time
 
+
 def main():
-    # Control code here
     log = open('Logs_result/log-model.txt', 'w')
-    M = 20000 #size memory
-    B = 64 #minibatch_size
-    a_dec = 4.5 # m/s^2
+    # Control code here
+    M = 20000  # size memory
+    B = 64  # minibatch_size
+    a_dec = 4.5  # m/s^2
     phase_number = 2
     action_space = phase_number * 2 + 1
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
+    tentative_action = [np.asarray([1, 1, 1, 1, 1]).reshape(1, action_space),
+                        np.asarray([0, 0, 1, 0, 0]).reshape(1, action_space),
+                        np.asarray([0, 1, 0, 0, 0]).reshape(1, action_space),
+                        np.asarray([0, 0, 0, 0, 1]).reshape(1, action_space),
+                        np.asarray([0, 0, 0, 1, 0]).reshape(1, action_space)]
+    global count_action_dif_default
     I = np.full((action_space, action_space), 0.5).reshape(1, action_space, action_space)
-    action_time = [33, 33]
     idLightControl = '4628048104'
     waiting_time_t = 0
-    waiting_time_t1 = 0
-    reward_t = 0
     i = 0
     agent = DQNAgent(M, action_space, B)
     try:
-        agent.load('Models/reinf_traf_control_v2.h5')
+        agent.load('Models/reinf_traf_control_v3.h5')
     except:
         print('No models found')
 
     sumo_int = SumoIntersection()
-    sumo_cmd = [sumoBinary, "-c", sumoConfig]
-    traci.start(sumo_cmd)
 
-    while (traci.simulation.getMinExpectedNumber() > 0) & (i < 7000):
-        traci.simulationStep()
-        waiting_time = 0
-        state = sumo_int.getState(I)
-        action = agent.act(state)
-        for j in range(phase_number):
-            action_time[j] += action_policy[action][j]
-            if action_time[j] < 0:
-                action_time[j] = 0
-            elif action_time[j] > 60:
-                action_time[j] = 60
-
-        # print action_time[0]
-        for j in range(action_time[0]):
-            traci.trafficlight.setPhase(idLightControl, 0)
-            waiting_time += cal_waiting_time()
+    episodes = 2000
+    sumo_cmd = [sumoBinary, "-c", sumoConfig, '--start']
+    for e in range(episodes):
+        traci.start(sumo_cmd)
+        action = 0
+        count_action_dif_default = 0
+        action_time = [33, 33]
+        zstep = 0
+        state = sumo_int.getState(I, action, tentative_action)
+        if i > 20000:
+            break
+        while (traci.simulation.getMinExpectedNumber() > 0) & (zstep < 700):
             traci.simulationStep()
+            waiting_time = 0
+            # print '------------------------------------------- ', action,state[2], ' --------------------'
+            action = agent.act(state)
+            if action != 0:
+                count_action_dif_default += 1
+            print '------------------------------------------- ', action, count_action_dif_default, ' --------------------'
+            for j in range(phase_number):
+                action_time[j] += action_policy[action][j]
+                if action_time[j] < 0:
+                    action_time[j] = 0
+                elif action_time[j] > 60:
+                    action_time[j] = 60
 
-        yellow_time1 =  sumo_int.cal_yellow_phase(['gneE21','gneE89'], a_dec)
-        # print waiting_time#yellow_time1
-        for j in range(yellow_time1):
-            traci.trafficlight.setPhase(idLightControl, 1)
-            waiting_time += cal_waiting_time()
-            traci.simulationStep()
+            # print action_time[0]
+            for j in range(action_time[0]):
+                traci.trafficlight.setPhase(idLightControl, 0)
+                waiting_time += cal_waiting_time()
+                traci.simulationStep()
 
-        # print waiting_time#action_time[1]
-        for j in range(action_time[1]):
-            traci.trafficlight.setPhase(idLightControl, 2)
-            waiting_time += cal_waiting_time()
-            traci.simulationStep()
+            yellow_time1 = sumo_int.cal_yellow_phase(['gneE21', 'gneE89'], a_dec)
+            # print waiting_time#yellow_time1
+            for j in range(yellow_time1):
+                traci.trafficlight.setPhase(idLightControl, 1)
+                waiting_time += cal_waiting_time()
+                traci.simulationStep()
 
-        yellow_time2 =  sumo_int.cal_yellow_phase(['gneE86','gneE85'], a_dec)
-        # print waiting_time#yellow_time2
-        for j in range(yellow_time2):
-            traci.trafficlight.setPhase(idLightControl, 3)
-            waiting_time += cal_waiting_time()
-            traci.simulationStep()
+            # print waiting_time#action_time[1]
+            for j in range(action_time[1]):
+                traci.trafficlight.setPhase(idLightControl, 2)
+                waiting_time += cal_waiting_time()
+                traci.simulationStep()
 
-        waiting_time_t1 = waiting_time
-        # print waiting_time_t, waiting_time_t1, reward_t
-        reward_t = waiting_time_t - waiting_time_t1
-        # print waiting_time_t, waiting_time_t1, reward_t
-        waiting_time_t = waiting_time_t1
+            yellow_time2 = sumo_int.cal_yellow_phase(['gneE86', 'gneE85'], a_dec)
+            # print waiting_time#yellow_time2
+            for j in range(yellow_time2):
+                traci.trafficlight.setPhase(idLightControl, 3)
+                waiting_time += cal_waiting_time()
+                traci.simulationStep()
 
-        # new_state = sumo_int.getState(I)
-        # agent.remember(state, action, reward_t, new_state, False)
+            waiting_time_t1 = waiting_time
+            reward_t = waiting_time_t - waiting_time_t1
+            # print waiting_time_t, waiting_time_t1, reward_t
+            waiting_time_t = waiting_time_t1
 
-        i += 1;
-        log.write('action - ' + str(i) + ', total waiting time - ' +
-                 str(waiting_time)  + ', average waiting time - ' +
-                 str((action_time[0]+action_time[1])/2) +'('+str(action_time[0])+','+str(yellow_time1)+','+str(action_time[1])+','+str(yellow_time2)+')'+ ', reward - ' + str(reward_t) +'\n')
-        # print '\n--------------------------------------------------- ',waiting_time, 'in step ', i, ' ---------------------------------------------------\n'
-    log.close()
-    traci.close()
+            new_state = sumo_int.getState(I, action, tentative_action)
+            state = new_state
+            agent.remember(state, action, reward_t, new_state, False)
+
+            i += 1;
+            zstep += 1
+            print '------------------------------------------- ', i, action_time, ' --------------------'
+            log.write('action - ' + str(i) + ', total waiting time - ' +
+                      str(waiting_time) + ', average waiting time - ' +
+                      str((action_time[0] + action_time[1]) / 2) + '(' + str(action_time[0]) + ',' + str(
+                yellow_time1) + ',' + str(action_time[1]) + ',' + str(yellow_time2) + ')' + ', reward - ' + str(
+                reward_t) + '\n')
+        log.close()
+        traci.close(wait=False)
+
 
 if __name__ == '__main__':
     main()
