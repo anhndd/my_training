@@ -12,6 +12,3 @@ action - 11, total waiting time - 4025, average waiting time - 33(33,4,33,4), re
 action - 12, total waiting time - 3146, average waiting time - 33(33,4,33,4), reward - 879
 action - 13, total waiting time - 4207, average waiting time - 33(33,4,33,4), reward - -1061
 action - 14, total waiting time - 4257, average waiting time - 33(33,4,33,4), reward - -50
-action - 15, total waiting time - 4204, average waiting time - 33(33,4,33,4), reward - 53
-action - 16, total waiting time - 4125, average waiting time - 33(33,4,33,4), reward - 79
-action - 17, total waiting time - 4225, average waiting time - 33(33,4,33,4), reward - -100

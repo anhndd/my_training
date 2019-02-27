@@ -35,6 +35,10 @@ def cal_waiting_time():
 def main():
     # Control code here
     log = open('Logs_result/log_fix_time.txt', 'w')
+    time_plot = []
+    waiting_time_plot = []
+    reward_t_plot = []
+    time_reward_t_plot = []
     a_dec = 4.5 # m/s^2
     phase_number = 2
     action_space = phase_number * 2 + 1
@@ -51,10 +55,10 @@ def main():
     # except:
     #     print('No models found')
 
-    sumo_cmd = [sumoBinary, "-c", sumoConfig]
+    sumo_cmd = [sumoBinary, "-c", sumoConfig,'--start']
     traci.start(sumo_cmd)
 
-    while (traci.simulation.getMinExpectedNumber() > 0) & (i < 7000):
+    while (traci.simulation.getMinExpectedNumber() > 0) & (traci.simulation.getTime() < 1000):
         traci.simulationStep()
         waiting_time = 0
 
@@ -63,6 +67,11 @@ def main():
             traci.trafficlight.setPhase(idLightControl, 0)
             waiting_time += cal_waiting_time()
             traci.simulationStep()
+            time_plot.append(traci.simulation.getTime())
+            waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
+                                     traci.edge.getWaitingTime('gneE86') +
+                                     traci.edge.getWaitingTime('gneE89') +
+                                     traci.edge.getWaitingTime('gneE85'))
 
         yellow_time1 =  4
         # print waiting_time#yellow_time1
@@ -70,12 +79,22 @@ def main():
             traci.trafficlight.setPhase(idLightControl, 1)
             waiting_time += cal_waiting_time()
             traci.simulationStep()
+            time_plot.append(traci.simulation.getTime())
+            waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
+                                     traci.edge.getWaitingTime('gneE86') +
+                                     traci.edge.getWaitingTime('gneE89') +
+                                     traci.edge.getWaitingTime('gneE85'))
 
         # print waiting_time#action_time[1]
         for j in range(action_time[1]):
             traci.trafficlight.setPhase(idLightControl, 2)
             waiting_time += cal_waiting_time()
             traci.simulationStep()
+            time_plot.append(traci.simulation.getTime())
+            waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
+                                     traci.edge.getWaitingTime('gneE86') +
+                                     traci.edge.getWaitingTime('gneE89') +
+                                     traci.edge.getWaitingTime('gneE85'))
 
         yellow_time2 =  4
         # print waiting_time#yellow_time2
@@ -83,9 +102,16 @@ def main():
             traci.trafficlight.setPhase(idLightControl, 3)
             waiting_time += cal_waiting_time()
             traci.simulationStep()
+            time_plot.append(traci.simulation.getTime())
+            waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
+                                     traci.edge.getWaitingTime('gneE86') +
+                                     traci.edge.getWaitingTime('gneE89') +
+                                     traci.edge.getWaitingTime('gneE85'))
 
         waiting_time_t1 = waiting_time
         reward_t = waiting_time_t - waiting_time_t1
+        reward_t_plot.append(reward_t);
+        time_reward_t_plot.append(traci.simulation.getTime())
         # print waiting_time_t, waiting_time_t1, reward_t
         waiting_time_t = waiting_time_t1
 
@@ -99,6 +125,11 @@ def main():
         # print '\n--------------------------------------------------- ',waiting_time, 'in step ', i, ' ---------------------------------------------------\n'
     log.close()
     traci.close()
+    np.save('array_plot/array_time_fix.npy', time_plot)
+    np.save('array_plot/array_waiting_time_fix.npy', waiting_time_plot)
+
+    np.save('array_plot/reward_t_plot_fix.npy', reward_t_plot)
+    np.save('array_plot/time_reward_t_plot_fix.npy', time_reward_t_plot)
 
 if __name__ == '__main__':
     main()

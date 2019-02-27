@@ -22,9 +22,8 @@ sumoBinary = "/usr/bin/sumo-gui"
 sumoConfig = "sumoconfig.sumoconfig"
 import traci
 
-count_action_dif_default = 0
 
-
+# count_action_dif_default = 0
 class TargetDQNAgent:
     def __init__(self, action_size):
         self.alpha = 0.0001  # target network update rate
@@ -83,6 +82,7 @@ class DQNAgent:
         self.start_epsilon = 1
         self.end_epsilon = 0.01
         self.step_epsilon = 10000
+        self.epsilon_decay = (self.start_epsilon - self.end_epsilon) / self.step_epsilon
         self.tp = 2000  # pre-training steps
         self.alpha = 0.0001  # target network update rate
         self.gamma = 0.99  # discount factor
@@ -128,18 +128,28 @@ class DQNAgent:
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
+    # def act(self, state):
+    #     if self.end_epsilon <= self.start_epsilon:
+    #         self.start_epsilon -= 0.99/self.step_epsilon
+    #         # print self.start_epsilon
+    #         if (state[2][0][0] == 0):
+    #             return np.argmax(state[2])
+    #         return random.randrange(self.action_size)
+    #     # print '---------------------------PREDICT---------------------------------------'
+    #     act_values = self.model.predict(state)
+    #     # print state[2][0], np.argmax(state[2][0])
+    #     if (state[2][0][0]== 0):
+    #         return np.argmax(state[2])
+    #     return np.argmax(act_values[0])  # returns action
+
     def act(self, state):
-        # if self.end_epsilon <= self.start_epsilon:
-        #     self.start_epsilon -= 0.99 / self.step_epsilon
-        #     # print self.start_epsilon
-        #     if (state[2][0][0] == 0):
-        #         return np.argmax(state[2])
-        #     return random.randrange(self.action_size)
-        # print '---------------------------PREDICT---------------------------------------'
-        act_values = self.model.predict(state)
-        print state[2][0], state[2][0][0],np.argmax(state[2][0])
-        if (state[2][0][0] == 0):
+        self.start_epsilon -= self.epsilon_decay
+        # print state[2][0]
+        if (state[2][0][1] == 0):
             return np.argmax(state[2])
+
+        act_values = self.model.predict(state)
+        # print state[2][0], np.argmax(state[2][0])
         return np.argmax(act_values[0])  # returns action
 
     def replay(self):
@@ -781,13 +791,14 @@ class SumoIntersection:
         output = np.transpose(outputMatrix)  # np.array(outputMatrix)
         output = output.reshape(1, 60, 60, 2)
         # print output.tolist()
-        global count_action_dif_default
-        if count_action_dif_default > 1:
-            tentative_action_matrix = tentative_action[0]
-            count_action_dif_default = 0
-        else:
-            tentative_action_matrix = tentative_action[action]
+        # global count_action_dif_default
+        # if count_action_dif_default > 1:
+        #     tentative_action_matrix = tentative_action[0]
+        #     count_action_dif_default = 0
+        # else:
+        #     tentative_action_matrix = tentative_action[action]
         # print  tentative_action_matrix
+        tentative_action_matrix = tentative_action[action]
         return [output, I, tentative_action_matrix]
 
     def cal_yellow_phase(self, id_list, a_dec):
@@ -810,29 +821,34 @@ def cal_waiting_time():
                      + traci.edge.getLastStepHaltingNumber('gneE85'))
     return waiting_time
 
-
 def main():
-    log = open('Logs_result/log-model.txt', 'w')
     # Control code here
-    M = 20000  # size memory
-    B = 64  # minibatch_size
-    a_dec = 4.5  # m/s^2
+    log = open('Logs_result/log-model.txt', 'w')
+    time_plot = []
+    waiting_time_plot = []
+    reward_t_plot = []
+    time_reward_t_plot = []
+
+    M = 20000 #size memory
+    B = 64 #minibatch_size
+    a_dec = 4.5 # m/s^2
     phase_number = 2
     action_space = phase_number * 2 + 1
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
-    tentative_action = [np.asarray([1, 1, 1, 1, 1]).reshape(1, action_space),
-                        np.asarray([0, 0, 1, 0, 0]).reshape(1, action_space),
-                        np.asarray([0, 1, 0, 0, 0]).reshape(1, action_space),
-                        np.asarray([0, 0, 0, 0, 1]).reshape(1, action_space),
-                        np.asarray([0, 0, 0, 1, 0]).reshape(1, action_space)]
-    global count_action_dif_default
+    # tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space),np.asarray([0,0,1,0,0]).reshape(1, action_space),
+    #                     np.asarray([0,1,0,0,0]).reshape(1, action_space),np.asarray([0,0,0,0,1]).reshape(1, action_space),
+    #                     np.asarray([0,0,0,1,0]).reshape(1, action_space)]
+    tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space),np.asarray([1,0,0,0,0]).reshape(1, action_space),
+                        np.asarray([1,0,0,0,0]).reshape(1, action_space),np.asarray([1,0,0,0,0]).reshape(1, action_space),
+                        np.asarray([1,0,0,0,0]).reshape(1, action_space)]
+    # global count_action_dif_default
     I = np.full((action_space, action_space), 0.5).reshape(1, action_space, action_space)
     idLightControl = '4628048104'
     waiting_time_t = 0
     i = 0
     agent = DQNAgent(M, action_space, B)
     try:
-        agent.load('Models/reinf_traf_control_v3.h5')
+        agent.load('Models/reinf_traf_control_v2.h5')
     except:
         print('No models found')
 
@@ -843,20 +859,21 @@ def main():
     for e in range(episodes):
         traci.start(sumo_cmd)
         action = 0
-        count_action_dif_default = 0
-        action_time = [33, 33]
+        # count_action_dif_default = 0
+        action_time = [33,33]
         zstep = 0
         state = sumo_int.getState(I, action, tentative_action)
         if i > 20000:
             break
-        while (traci.simulation.getMinExpectedNumber() > 0) & (zstep < 700):
+        while (traci.simulation.getMinExpectedNumber() > 0) & (traci.simulation.getTime() < 1000):
             traci.simulationStep()
+            time_plot.append(traci.simulation.getTime())
+            waiting_time_plot.append(traci.edge.getWaitingTime('gneE21')+
+                                     traci.edge.getWaitingTime('gneE86')+
+                                     traci.edge.getWaitingTime('gneE89')+
+                                     traci.edge.getWaitingTime('gneE85'))
             waiting_time = 0
-            # print '------------------------------------------- ', action,state[2], ' --------------------'
             action = agent.act(state)
-            if action != 0:
-                count_action_dif_default += 1
-            print '------------------------------------------- ', action, count_action_dif_default, ' --------------------'
             for j in range(phase_number):
                 action_time[j] += action_policy[action][j]
                 if action_time[j] < 0:
@@ -869,6 +886,11 @@ def main():
                 traci.trafficlight.setPhase(idLightControl, 0)
                 waiting_time += cal_waiting_time()
                 traci.simulationStep()
+                time_plot.append(traci.simulation.getTime())
+                waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
+                                         traci.edge.getWaitingTime('gneE86') +
+                                         traci.edge.getWaitingTime('gneE89') +
+                                         traci.edge.getWaitingTime('gneE85'))
 
             yellow_time1 = sumo_int.cal_yellow_phase(['gneE21', 'gneE89'], a_dec)
             # print waiting_time#yellow_time1
@@ -876,12 +898,22 @@ def main():
                 traci.trafficlight.setPhase(idLightControl, 1)
                 waiting_time += cal_waiting_time()
                 traci.simulationStep()
+                time_plot.append(traci.simulation.getTime())
+                waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
+                                         traci.edge.getWaitingTime('gneE86') +
+                                         traci.edge.getWaitingTime('gneE89') +
+                                         traci.edge.getWaitingTime('gneE85'))
 
             # print waiting_time#action_time[1]
             for j in range(action_time[1]):
                 traci.trafficlight.setPhase(idLightControl, 2)
                 waiting_time += cal_waiting_time()
                 traci.simulationStep()
+                time_plot.append(traci.simulation.getTime())
+                waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
+                                         traci.edge.getWaitingTime('gneE86') +
+                                         traci.edge.getWaitingTime('gneE89') +
+                                         traci.edge.getWaitingTime('gneE85'))
 
             yellow_time2 = sumo_int.cal_yellow_phase(['gneE86', 'gneE85'], a_dec)
             # print waiting_time#yellow_time2
@@ -889,27 +921,36 @@ def main():
                 traci.trafficlight.setPhase(idLightControl, 3)
                 waiting_time += cal_waiting_time()
                 traci.simulationStep()
+                time_plot.append(traci.simulation.getTime())
+                waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
+                                         traci.edge.getWaitingTime('gneE86') +
+                                         traci.edge.getWaitingTime('gneE89') +
+                                         traci.edge.getWaitingTime('gneE85'))
 
             waiting_time_t1 = waiting_time
             reward_t = waiting_time_t - waiting_time_t1
+            reward_t_plot.append(reward_t);
+            time_reward_t_plot.append(traci.simulation.getTime())
             # print waiting_time_t, waiting_time_t1, reward_t
             waiting_time_t = waiting_time_t1
 
             new_state = sumo_int.getState(I, action, tentative_action)
             state = new_state
-            agent.remember(state, action, reward_t, new_state, False)
-
-            i += 1;
-            zstep += 1
-            print '------------------------------------------- ', i, action_time, ' --------------------'
+            i += 1
+            zstep+=1
             log.write('action - ' + str(i) + ', total waiting time - ' +
                       str(waiting_time) + ', average waiting time - ' +
                       str((action_time[0] + action_time[1]) / 2) + '(' + str(action_time[0]) + ',' + str(
                 yellow_time1) + ',' + str(action_time[1]) + ',' + str(yellow_time2) + ')' + ', reward - ' + str(
                 reward_t) + '\n')
+        traci.close()
         log.close()
-        traci.close(wait=False)
+        np.save('array_plot/array_time.npy', time_plot)
+        np.save('array_plot/array_waiting_time.npy', waiting_time_plot)
 
+        np.save('array_plot/reward_t_plot.npy', reward_t_plot)
+        np.save('array_plot/time_reward_t_plot.npy', time_reward_t_plot)
+        break
 
 if __name__ == '__main__':
     main()

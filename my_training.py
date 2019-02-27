@@ -18,7 +18,7 @@ if 'SUMO_HOME' in os.environ:
 else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
 
-sumoBinary = "/usr/bin/sumo-gui"
+sumoBinary = "/usr/bin/sumo"
 sumoConfig = "sumoconfig.sumoconfig"
 import traci
 
@@ -878,9 +878,8 @@ def main():
             waiting_time_t = waiting_time_t1
 
             new_state = sumo_int.getState(I, action, tentative_action)
-            state = new_state
             agent.remember(state, action, reward_t, new_state, False)
-
+            state = new_state
             i += 1
             zstep+=1
             print '------------------------------------------- ', i, action_time, ' --------------------'

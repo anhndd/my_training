@@ -140,7 +140,7 @@ duarouter -n net.net.xml -r result.rou.xml --randomize-flows -o myroutes.rou.xml
 </configuration>
 
 
-Phase quy định: 
+6) Phase quy định: 
         <phase duration="33" state="ggggggggggggrrrrrrrrrrrrggggggggggggrrrrrrrrrrrrrGrG"/>
         <phase duration="4" state="yyyyyyyyyyyyrrrrrrrrrrrryyyyyyyyyyyyrrrrrrrrrrrrrGrG"/>
         <phase duration="33" state="rrrrrrrrrrrrggggggggggggrrrrrrrrrrrrggggggggggggGrGr"/>
@@ -151,12 +151,23 @@ sudo add-apt-repository ppa:sumo/stable
 sudo apt-get update
 sudo apt-get install sumo sumo-tools sumo-doc
 
-#####
+7) log file 
+B1:
     log = open('Logs_result/log-model.txt', 'w')
 
+B2:
 log.write('action - ' + str(i) + ', total waiting time - ' +
                  str(waiting_time)  + ', average waiting time - ' +
                  str((action_time[0]+action_time[1])/2) +'('+str(action_time[0])+','+str(yellow_time1)+','+str(action_time[1])+','+str(yellow_time2)+')'+ ', reward - ' + str(reward_t) +'\n')
 
+B3:
     log.close()
+
+8) ve do thi:
+pip install matplotlib=2.0.0
+sudo apt-get install python-tk
+
+9) save & load array:
+np.save('test3.npy', x)
+d = np.load('test3.npy')
 
