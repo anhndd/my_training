@@ -58,7 +58,7 @@ def main():
     sumo_cmd = [sumoBinary, "-c", sumoConfig,'--start']
     traci.start(sumo_cmd)
 
-    while (traci.simulation.getMinExpectedNumber() > 0) & (traci.simulation.getTime() < 1000):
+    while (traci.simulation.getMinExpectedNumber() > 0) & (traci.simulation.getTime() < 4000):
         traci.simulationStep()
         waiting_time = 0
 

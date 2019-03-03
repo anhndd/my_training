@@ -848,7 +848,7 @@ def main():
     i = 0
     agent = DQNAgent(M, action_space, B)
     try:
-        agent.load('Models/reinf_traf_control_v2.h5')
+        agent.load('Models/reinf_traf_control_v4.h5')
     except:
         print('No models found')
 
@@ -865,7 +865,7 @@ def main():
         state = sumo_int.getState(I, action, tentative_action)
         if i > 20000:
             break
-        while (traci.simulation.getMinExpectedNumber() > 0) & (traci.simulation.getTime() < 1000):
+        while (traci.simulation.getMinExpectedNumber() > 0) & (traci.simulation.getTime() < 4000):
             traci.simulationStep()
             time_plot.append(traci.simulation.getTime())
             waiting_time_plot.append(traci.edge.getWaitingTime('gneE21')+

@@ -34,10 +34,6 @@ class TargetDQNAgent:
         # Neural Net for Deep-Q learning Model
         input_1 = Input(shape=(60, 60, 2))
         input_2 = Input(shape=(self.action_size, self.action_size))
-        # keras.layers.Conv2D(filters, kernel_size, strides=(1, 1), padding='valid', data_format=None,
-        #                     dilation_rate=(1, 1), activation=None, use_bias=True, kernel_initializer='glorot_uniform',
-        #                     bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None,
-        #                     activity_regularizer=None, kernel_constraint=None, bias_constraint=None)
         x1 = Conv2D(32, (4, 4), strides=(2, 2),padding='Same', activation=LeakyReLU(alpha=self.Beta))(input_1)
         x1 = Conv2D(64, (2, 2), strides=(2, 2),padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
         x1 = Conv2D(128, (2, 2), strides=(1, 1),padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
@@ -93,10 +89,6 @@ class DQNAgent:
         # Neural Net for Deep-Q learning Model
         input_1 = Input(shape=(60, 60, 2))
         input_2 = Input(shape=(self.action_size, self.action_size))
-        # keras.layers.Conv2D(filters, kernel_size, strides=(1, 1), padding='valid', data_format=None,
-        #                     dilation_rate=(1, 1), activation=None, use_bias=True, kernel_initializer='glorot_uniform',
-        #                     bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None,
-        #                     activity_regularizer=None, kernel_constraint=None, bias_constraint=None)
         x1 = Conv2D(32, (4, 4), strides=(2, 2),padding='Same', activation=LeakyReLU(alpha=self.Beta))(input_1)
         x1 = Conv2D(64, (2, 2), strides=(2, 2),padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
         x1 = Conv2D(128, (2, 2), strides=(1, 1),padding='Same', activation=LeakyReLU(alpha=self.Beta))(x1)
@@ -114,8 +106,6 @@ class DQNAgent:
 
         input_3 = Input(shape=(5,))
         Output = Multiply()([input_3, Q_value])
-        # if (input_3[0][0] == 0) & (Q_value[np.argmax(input_3[0])] < 0):
-        #     Q_value[np.argmax(input_3[0])] *= -1
 
         model = Model(inputs=[input_1, input_2, input_3], outputs=[Output])
         model.compile(optimizer= Adam(lr=self.epsilon_r), loss='mse')
@@ -125,22 +115,7 @@ class DQNAgent:
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
-    # def act(self, state):
-    #     if self.end_epsilon <= self.start_epsilon:
-    #         self.start_epsilon -= 0.99/self.step_epsilon
-    #         # print self.start_epsilon
-    #         if (state[2][0][0] == 0):
-    #             return np.argmax(state[2])
-    #         return random.randrange(self.action_size)
-    #     # print '---------------------------PREDICT---------------------------------------'
-    #     act_values = self.model.predict(state)
-    #     # print state[2][0], np.argmax(state[2][0])
-    #     if (state[2][0][0]== 0):
-    #         return np.argmax(state[2])
-    #     return np.argmax(act_values[0])  # returns action
-
     def act(self,state):
-        self.start_epsilon -= self.epsilon_decay
         # print state[2][0]
         if (state[2][0][1] == 0):
             return np.argmax(state[2])
@@ -172,7 +147,7 @@ class DQNAgent:
                 # cach 1...................
                 target_f = self.model.predict(s)
                 target_f[0][a] = Q_target
-                self.model.fit(s, target_f, epochs=1, verbose=0)
+                self.model.fit(s, target_f, epochs=1, verbose=2,batch_size=self.minibatch_size)
                 # cach 1...................
         # J /= self.minibatch_size
         # self.model.train_on_batch(X, Y)
@@ -801,9 +776,6 @@ def main():
     phase_number = 2
     action_space = phase_number * 2 + 1
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
-    # tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space),np.asarray([0,0,1,0,0]).reshape(1, action_space),
-    #                     np.asarray([0,1,0,0,0]).reshape(1, action_space),np.asarray([0,0,0,0,1]).reshape(1, action_space),
-    #                     np.asarray([0,0,0,1,0]).reshape(1, action_space)]
     tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space),np.asarray([1,0,0,0,0]).reshape(1, action_space),
                         np.asarray([1,0,0,0,0]).reshape(1, action_space),np.asarray([1,0,0,0,0]).reshape(1, action_space),
                         np.asarray([1,0,0,0,0]).reshape(1, action_space)]
@@ -814,7 +786,7 @@ def main():
     i = 0
     agent = DQNAgent(M, action_space, B)
     try:
-        agent.load('Models/reinf_traf_control_v4.h5')
+        agent.load('Models/reinf_traf_control_v5.h5')
     except:
         print('No models found')
 
@@ -887,9 +859,10 @@ def main():
                 # if len(agent.memory) > 100 & (i > 1):
                 #     print '-------------------------------------------BEGIN REPLAY------------------------'
                 agent.replay()
+                agent.start_epsilon -= agent.epsilon_decay
             # print reward_t, 'in step ', i
             # print('-----------------------end simulation----------------------------')
-        agent.save('Models/reinf_traf_control_v4.h5')
+        agent.save('Models/reinf_traf_control_v5.h5')
         traci.close(wait=False)
 
 
