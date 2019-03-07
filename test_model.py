@@ -143,7 +143,7 @@ class DQNAgent:
     #     return np.argmax(act_values[0])  # returns action
 
     def act(self, state):
-        self.start_epsilon -= self.epsilon_decay
+        # self.start_epsilon -= self.epsilon_decay
         # print state[2][0]
         if (state[2][0][1] == 0):
             return np.argmax(state[2])
@@ -848,7 +848,7 @@ def main():
     i = 0
     agent = DQNAgent(M, action_space, B)
     try:
-        agent.load('Models/reinf_traf_control_v4.h5')
+        agent.load('Models/reinf_traf_control_v7_esilon_waiting_time.h5')
     except:
         print('No models found')
 
@@ -865,7 +865,7 @@ def main():
         state = sumo_int.getState(I, action, tentative_action)
         if i > 20000:
             break
-        while (traci.simulation.getMinExpectedNumber() > 0) & (traci.simulation.getTime() < 4000):
+        while (traci.simulation.getMinExpectedNumber() > 0) & (traci.simulation.getTime() < 10000):
             traci.simulationStep()
             time_plot.append(traci.simulation.getTime())
             waiting_time_plot.append(traci.edge.getWaitingTime('gneE21')+
@@ -939,17 +939,17 @@ def main():
             i += 1
             zstep+=1
             log.write('action - ' + str(i) + ', total waiting time - ' +
-                      str(waiting_time) + ', average waiting time - ' +
-                      str((action_time[0] + action_time[1]) / 2) + '(' + str(action_time[0]) + ',' + str(
+                      str(waiting_time) + ', action - ' + '(' + str(action_time[0]) + ',' + str(
                 yellow_time1) + ',' + str(action_time[1]) + ',' + str(yellow_time2) + ')' + ', reward - ' + str(
                 reward_t) + '\n')
         traci.close()
         log.close()
-        np.save('array_plot/array_time.npy', time_plot)
-        np.save('array_plot/array_waiting_time.npy', waiting_time_plot)
+        key = '_10000'
+        np.save('array_plot/array_time'+key+'.npy', time_plot)
+        np.save('array_plot/array_waiting_time'+key+'.npy', waiting_time_plot)
 
-        np.save('array_plot/reward_t_plot.npy', reward_t_plot)
-        np.save('array_plot/time_reward_t_plot.npy', time_reward_t_plot)
+        np.save('array_plot/reward_t_plot'+key+'.npy', reward_t_plot)
+        np.save('array_plot/time_reward_t_plot'+key+'.npy', time_reward_t_plot)
         break
 
 if __name__ == '__main__':

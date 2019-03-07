@@ -147,7 +147,7 @@ class DQNAgent:
                 # cach 1...................
                 target_f = self.model.predict(s)
                 target_f[0][a] = Q_target
-                self.model.fit(s, target_f, epochs=1, verbose=2,batch_size=self.minibatch_size)
+                self.model.fit(s, target_f, epochs=1, verbose=0,batch_size=self.minibatch_size)
                 # cach 1...................
         # J /= self.minibatch_size
         # self.model.train_on_batch(X, Y)
@@ -761,12 +761,12 @@ class SumoIntersection:
         return int(np.amax(v_on_road)/a_dec)
 
 def cal_waiting_time():
-    waiting_time = 0
-    waiting_time += (traci.edge.getLastStepHaltingNumber('gneE21')
-                     + traci.edge.getLastStepHaltingNumber('gneE86')
-                     + traci.edge.getLastStepHaltingNumber('gneE89')
-                     + traci.edge.getLastStepHaltingNumber('gneE85'))
-    return waiting_time
+    # waiting_time = 0
+    # waiting_time += (traci.edge.getLastStepHaltingNumber('gneE21')
+    #                  + traci.edge.getLastStepHaltingNumber('gneE86')
+    #                  + traci.edge.getLastStepHaltingNumber('gneE89')
+    #                  + traci.edge.getLastStepHaltingNumber('gneE85'))
+    return (traci.edge.getWaitingTime('gneE21') + traci.edge.getWaitingTime('gneE86') + traci.edge.getWaitingTime('gneE89') + traci.edge.getWaitingTime('gneE85')) # waiting_time
 
 def main():
     # Control code here
@@ -786,7 +786,7 @@ def main():
     i = 0
     agent = DQNAgent(M, action_space, B)
     try:
-        agent.load('Models/reinf_traf_control_v5.h5')
+        agent.load('Models/reinf_traf_control_v8_esilon_waiting_time_full_step.h5')
     except:
         print('No models found')
 
@@ -799,11 +799,10 @@ def main():
         action = 0
         # count_action_dif_default = 0
         action_time = [33,33]
-        zstep = 0
         state = sumo_int.getState(I, action, tentative_action)
-        if i > 20000:
+        if i > 30000:
             break
-        while (traci.simulation.getMinExpectedNumber() > 0) & (zstep < 700):
+        while traci.simulation.getMinExpectedNumber() > 0:
             traci.simulationStep()
             waiting_time = 0
             # print '------------------------------------------- ', action,state[2], ' --------------------'
@@ -821,29 +820,29 @@ def main():
             # print action_time[0]
             for j in range(action_time[0]):
                 traci.trafficlight.setPhase(idLightControl, 0)
-                waiting_time += cal_waiting_time()
+                # waiting_time += cal_waiting_time()
                 traci.simulationStep()
 
             yellow_time1 = sumo_int.cal_yellow_phase(['gneE21', 'gneE89'], a_dec)
             # print waiting_time#yellow_time1
             for j in range(yellow_time1):
                 traci.trafficlight.setPhase(idLightControl, 1)
-                waiting_time += cal_waiting_time()
+                # waiting_time += cal_waiting_time()
                 traci.simulationStep()
 
             # print waiting_time#action_time[1]
             for j in range(action_time[1]):
                 traci.trafficlight.setPhase(idLightControl, 2)
-                waiting_time += cal_waiting_time()
+                # waiting_time += cal_waiting_time()
                 traci.simulationStep()
 
             yellow_time2 = sumo_int.cal_yellow_phase(['gneE86', 'gneE85'], a_dec)
             # print waiting_time#yellow_time2
             for j in range(yellow_time2):
                 traci.trafficlight.setPhase(idLightControl, 3)
-                waiting_time += cal_waiting_time()
+                # waiting_time += cal_waiting_time()
                 traci.simulationStep()
-
+            waiting_time += cal_waiting_time()
             waiting_time_t1 = waiting_time
             reward_t = waiting_time_t - waiting_time_t1
             # print waiting_time_t, waiting_time_t1, reward_t
@@ -853,8 +852,7 @@ def main():
             agent.remember(state, action, reward_t, new_state, False)
             state = new_state
             i += 1
-            zstep+=1
-            print '------------------------------------------- ', i, action_time, ' --------------------'
+            print '------------------------------------------- step - ',i, i/300,'% - ', action_time, ' --------------------'
             if (len(agent.memory) > B) & (i > agent.tp):
                 # if len(agent.memory) > 100 & (i > 1):
                 #     print '-------------------------------------------BEGIN REPLAY------------------------'
@@ -862,7 +860,7 @@ def main():
                 agent.start_epsilon -= agent.epsilon_decay
             # print reward_t, 'in step ', i
             # print('-----------------------end simulation----------------------------')
-        agent.save('Models/reinf_traf_control_v5.h5')
+        agent.save('Models/reinf_traf_control_v8_esilon_waiting_time_full_step.h5')
         traci.close(wait=False)
 
 

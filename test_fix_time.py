@@ -58,7 +58,7 @@ def main():
     sumo_cmd = [sumoBinary, "-c", sumoConfig,'--start']
     traci.start(sumo_cmd)
 
-    while (traci.simulation.getMinExpectedNumber() > 0) & (traci.simulation.getTime() < 4000):
+    while (traci.simulation.getMinExpectedNumber() > 0) & (traci.simulation.getTime() < 10000):
         traci.simulationStep()
         waiting_time = 0
 
@@ -120,16 +120,16 @@ def main():
 
         i += 1;
         log.write('action - ' + str(i) + ', total waiting time - ' +
-                 str(waiting_time)  + ', average waiting time - ' +
-                 str((action_time[0]+action_time[1])/2) +'('+str(action_time[0])+','+str(yellow_time1)+','+str(action_time[1])+','+str(yellow_time2)+')'+ ', reward - ' + str(reward_t) +'\n')
+                 str(waiting_time)  + ', action - ' +'('+str(action_time[0])+','+str(yellow_time1)+','+str(action_time[1])+','+str(yellow_time2)+')'+ ', reward - ' + str(reward_t) +'\n')
         # print '\n--------------------------------------------------- ',waiting_time, 'in step ', i, ' ---------------------------------------------------\n'
     log.close()
     traci.close()
-    np.save('array_plot/array_time_fix.npy', time_plot)
-    np.save('array_plot/array_waiting_time_fix.npy', waiting_time_plot)
+    key = '_10000'
+    np.save('array_plot/array_time_fix'+key+'.npy', time_plot)
+    np.save('array_plot/array_waiting_time_fix'+key+'.npy', waiting_time_plot)
 
-    np.save('array_plot/reward_t_plot_fix.npy', reward_t_plot)
-    np.save('array_plot/time_reward_t_plot_fix.npy', time_reward_t_plot)
+    np.save('array_plot/reward_t_plot_fix'+key+'.npy', reward_t_plot)
+    np.save('array_plot/time_reward_t_plot_fix'+key+'.npy', time_reward_t_plot)
 
 if __name__ == '__main__':
     main()

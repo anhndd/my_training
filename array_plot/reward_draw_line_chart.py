@@ -4,11 +4,12 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 def main():
-    x = np.load('array_plot/time_reward_t_plot_fix.npy')
-    y = np.load('array_plot/reward_t_plot_fix.npy')
+    key = '_10000'
+    x = np.load('array_plot/time_reward_t_plot_fix'+key+'.npy')
+    y = np.load('array_plot/reward_t_plot_fix'+key+'.npy')
 
-    x2 = np.load('array_plot/time_reward_t_plot.npy')
-    y2 = np.load('array_plot/reward_t_plot.npy')
+    x2 = np.load('array_plot/time_reward_t_plot'+key+'.npy')
+    y2 = np.load('array_plot/reward_t_plot'+key+'.npy')
 
     plt.plot(x, y)
     plt.plot(x2, y2)
