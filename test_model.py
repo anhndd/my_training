@@ -938,6 +938,8 @@ def main():
             state = new_state
             i += 1
             zstep+=1
+            print('action - ' + '(' + str(action_time[0]) + ',' + str(
+                yellow_time1) + ',' + str(action_time[1]) + ',' + str(yellow_time2) + ')')
             log.write('action - ' + str(i) + ', total waiting time - ' +
                       str(waiting_time) + ', action - ' + '(' + str(action_time[0]) + ',' + str(
                 yellow_time1) + ',' + str(action_time[1]) + ',' + str(yellow_time2) + ')' + ', reward - ' + str(

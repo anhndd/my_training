@@ -44,7 +44,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v8_esilon_waiting_time_full_step.h5')
+        agent.load('Models/reinf_traf_control_v9_esilon_waiting_time_full_step.h5')
     except:
         print('No models found')
 
