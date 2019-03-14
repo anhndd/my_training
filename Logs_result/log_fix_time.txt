@@ -1,134 +1,76 @@
-action - 1, total waiting time - 505, average waiting time - 33(33,4,33,4), reward - -505
-action - 2, total waiting time - 1542, average waiting time - 33(33,4,33,4), reward - -1037
-action - 3, total waiting time - 2717, average waiting time - 33(33,4,33,4), reward - -1175
-action - 4, total waiting time - 2986, average waiting time - 33(33,4,33,4), reward - -269
-action - 5, total waiting time - 3785, average waiting time - 33(33,4,33,4), reward - -799
-action - 6, total waiting time - 4165, average waiting time - 33(33,4,33,4), reward - -380
-action - 7, total waiting time - 4913, average waiting time - 33(33,4,33,4), reward - -748
-action - 8, total waiting time - 4320, average waiting time - 33(33,4,33,4), reward - 593
-action - 9, total waiting time - 4516, average waiting time - 33(33,4,33,4), reward - -196
-action - 10, total waiting time - 4256, average waiting time - 33(33,4,33,4), reward - 260
-action - 11, total waiting time - 4025, average waiting time - 33(33,4,33,4), reward - 231
-action - 12, total waiting time - 3146, average waiting time - 33(33,4,33,4), reward - 879
-action - 13, total waiting time - 4207, average waiting time - 33(33,4,33,4), reward - -1061
-action - 14, total waiting time - 4257, average waiting time - 33(33,4,33,4), reward - -50
-action - 15, total waiting time - 4204, average waiting time - 33(33,4,33,4), reward - 53
-action - 16, total waiting time - 4125, average waiting time - 33(33,4,33,4), reward - 79
-action - 17, total waiting time - 4225, average waiting time - 33(33,4,33,4), reward - -100
-action - 18, total waiting time - 4357, average waiting time - 33(33,4,33,4), reward - -132
-action - 19, total waiting time - 4433, average waiting time - 33(33,4,33,4), reward - -76
-action - 20, total waiting time - 5798, average waiting time - 33(33,4,33,4), reward - -1365
-action - 21, total waiting time - 5429, average waiting time - 33(33,4,33,4), reward - 369
-action - 22, total waiting time - 5777, average waiting time - 33(33,4,33,4), reward - -348
-action - 23, total waiting time - 5846, average waiting time - 33(33,4,33,4), reward - -69
-action - 24, total waiting time - 5356, average waiting time - 33(33,4,33,4), reward - 490
-action - 25, total waiting time - 6681, average waiting time - 33(33,4,33,4), reward - -1325
-action - 26, total waiting time - 5942, average waiting time - 33(33,4,33,4), reward - 739
-action - 27, total waiting time - 5007, average waiting time - 33(33,4,33,4), reward - 935
-action - 28, total waiting time - 5618, average waiting time - 33(33,4,33,4), reward - -611
-action - 29, total waiting time - 7738, average waiting time - 33(33,4,33,4), reward - -2120
-action - 30, total waiting time - 6285, average waiting time - 33(33,4,33,4), reward - 1453
-action - 31, total waiting time - 6048, average waiting time - 33(33,4,33,4), reward - 237
-action - 32, total waiting time - 5687, average waiting time - 33(33,4,33,4), reward - 361
-action - 33, total waiting time - 5739, average waiting time - 33(33,4,33,4), reward - -52
-action - 34, total waiting time - 5688, average waiting time - 33(33,4,33,4), reward - 51
-action - 35, total waiting time - 6000, average waiting time - 33(33,4,33,4), reward - -312
-action - 36, total waiting time - 6113, average waiting time - 33(33,4,33,4), reward - -113
-action - 37, total waiting time - 5981, average waiting time - 33(33,4,33,4), reward - 132
-action - 38, total waiting time - 5940, average waiting time - 33(33,4,33,4), reward - 41
-action - 39, total waiting time - 6488, average waiting time - 33(33,4,33,4), reward - -548
-action - 40, total waiting time - 6349, average waiting time - 33(33,4,33,4), reward - 139
-action - 41, total waiting time - 6639, average waiting time - 33(33,4,33,4), reward - -290
-action - 42, total waiting time - 6696, average waiting time - 33(33,4,33,4), reward - -57
-action - 43, total waiting time - 6071, average waiting time - 33(33,4,33,4), reward - 625
-action - 44, total waiting time - 6237, average waiting time - 33(33,4,33,4), reward - -166
-action - 45, total waiting time - 6678, average waiting time - 33(33,4,33,4), reward - -441
-action - 46, total waiting time - 5119, average waiting time - 33(33,4,33,4), reward - 1559
-action - 47, total waiting time - 6249, average waiting time - 33(33,4,33,4), reward - -1130
-action - 48, total waiting time - 5692, average waiting time - 33(33,4,33,4), reward - 557
-action - 49, total waiting time - 6002, average waiting time - 33(33,4,33,4), reward - -310
-action - 50, total waiting time - 6320, average waiting time - 33(33,4,33,4), reward - -318
-action - 51, total waiting time - 5119, average waiting time - 33(33,4,33,4), reward - 1201
-action - 52, total waiting time - 5753, average waiting time - 33(33,4,33,4), reward - -634
-action - 53, total waiting time - 6366, average waiting time - 33(33,4,33,4), reward - -613
-action - 54, total waiting time - 5846, average waiting time - 33(33,4,33,4), reward - 520
-action - 55, total waiting time - 4680, average waiting time - 33(33,4,33,4), reward - 1166
-action - 56, total waiting time - 4811, average waiting time - 33(33,4,33,4), reward - -131
-action - 57, total waiting time - 5523, average waiting time - 33(33,4,33,4), reward - -712
-action - 58, total waiting time - 6550, average waiting time - 33(33,4,33,4), reward - -1027
-action - 59, total waiting time - 6303, average waiting time - 33(33,4,33,4), reward - 247
-action - 60, total waiting time - 6931, average waiting time - 33(33,4,33,4), reward - -628
-action - 61, total waiting time - 6566, average waiting time - 33(33,4,33,4), reward - 365
-action - 62, total waiting time - 6647, average waiting time - 33(33,4,33,4), reward - -81
-action - 63, total waiting time - 7661, average waiting time - 33(33,4,33,4), reward - -1014
-action - 64, total waiting time - 6050, average waiting time - 33(33,4,33,4), reward - 1611
-action - 65, total waiting time - 7957, average waiting time - 33(33,4,33,4), reward - -1907
-action - 66, total waiting time - 7867, average waiting time - 33(33,4,33,4), reward - 90
-action - 67, total waiting time - 7509, average waiting time - 33(33,4,33,4), reward - 358
-action - 68, total waiting time - 7143, average waiting time - 33(33,4,33,4), reward - 366
-action - 69, total waiting time - 5699, average waiting time - 33(33,4,33,4), reward - 1444
-action - 70, total waiting time - 5942, average waiting time - 33(33,4,33,4), reward - -243
-action - 71, total waiting time - 6502, average waiting time - 33(33,4,33,4), reward - -560
-action - 72, total waiting time - 6434, average waiting time - 33(33,4,33,4), reward - 68
-action - 73, total waiting time - 5940, average waiting time - 33(33,4,33,4), reward - 494
-action - 74, total waiting time - 5778, average waiting time - 33(33,4,33,4), reward - 162
-action - 75, total waiting time - 5483, average waiting time - 33(33,4,33,4), reward - 295
-action - 76, total waiting time - 5710, average waiting time - 33(33,4,33,4), reward - -227
-action - 77, total waiting time - 6355, average waiting time - 33(33,4,33,4), reward - -645
-action - 78, total waiting time - 6090, average waiting time - 33(33,4,33,4), reward - 265
-action - 79, total waiting time - 6520, average waiting time - 33(33,4,33,4), reward - -430
-action - 80, total waiting time - 6316, average waiting time - 33(33,4,33,4), reward - 204
-action - 81, total waiting time - 6424, average waiting time - 33(33,4,33,4), reward - -108
-action - 82, total waiting time - 8178, average waiting time - 33(33,4,33,4), reward - -1754
-action - 83, total waiting time - 7029, average waiting time - 33(33,4,33,4), reward - 1149
-action - 84, total waiting time - 6978, average waiting time - 33(33,4,33,4), reward - 51
-action - 85, total waiting time - 6189, average waiting time - 33(33,4,33,4), reward - 789
-action - 86, total waiting time - 5881, average waiting time - 33(33,4,33,4), reward - 308
-action - 87, total waiting time - 9802, average waiting time - 33(33,4,33,4), reward - -3921
-action - 88, total waiting time - 14513, average waiting time - 33(33,4,33,4), reward - -4711
-action - 89, total waiting time - 16250, average waiting time - 33(33,4,33,4), reward - -1737
-action - 90, total waiting time - 11528, average waiting time - 33(33,4,33,4), reward - 4722
-action - 91, total waiting time - 10323, average waiting time - 33(33,4,33,4), reward - 1205
-action - 92, total waiting time - 11189, average waiting time - 33(33,4,33,4), reward - -866
-action - 93, total waiting time - 9244, average waiting time - 33(33,4,33,4), reward - 1945
-action - 94, total waiting time - 7169, average waiting time - 33(33,4,33,4), reward - 2075
-action - 95, total waiting time - 6352, average waiting time - 33(33,4,33,4), reward - 817
-action - 96, total waiting time - 6901, average waiting time - 33(33,4,33,4), reward - -549
-action - 97, total waiting time - 7303, average waiting time - 33(33,4,33,4), reward - -402
-action - 98, total waiting time - 6360, average waiting time - 33(33,4,33,4), reward - 943
-action - 99, total waiting time - 6004, average waiting time - 33(33,4,33,4), reward - 356
-action - 100, total waiting time - 6202, average waiting time - 33(33,4,33,4), reward - -198
-action - 101, total waiting time - 5910, average waiting time - 33(33,4,33,4), reward - 292
-action - 102, total waiting time - 6023, average waiting time - 33(33,4,33,4), reward - -113
-action - 103, total waiting time - 5929, average waiting time - 33(33,4,33,4), reward - 94
-action - 104, total waiting time - 5769, average waiting time - 33(33,4,33,4), reward - 160
-action - 105, total waiting time - 5398, average waiting time - 33(33,4,33,4), reward - 371
-action - 106, total waiting time - 5634, average waiting time - 33(33,4,33,4), reward - -236
-action - 107, total waiting time - 6076, average waiting time - 33(33,4,33,4), reward - -442
-action - 108, total waiting time - 4661, average waiting time - 33(33,4,33,4), reward - 1415
-action - 109, total waiting time - 4410, average waiting time - 33(33,4,33,4), reward - 251
-action - 110, total waiting time - 3143, average waiting time - 33(33,4,33,4), reward - 1267
-action - 111, total waiting time - 2059, average waiting time - 33(33,4,33,4), reward - 1084
-action - 112, total waiting time - 1938, average waiting time - 33(33,4,33,4), reward - 121
-action - 113, total waiting time - 1567, average waiting time - 33(33,4,33,4), reward - 371
-action - 114, total waiting time - 2071, average waiting time - 33(33,4,33,4), reward - -504
-action - 115, total waiting time - 2121, average waiting time - 33(33,4,33,4), reward - -50
-action - 116, total waiting time - 2127, average waiting time - 33(33,4,33,4), reward - -6
-action - 117, total waiting time - 2010, average waiting time - 33(33,4,33,4), reward - 117
-action - 118, total waiting time - 1710, average waiting time - 33(33,4,33,4), reward - 300
-action - 119, total waiting time - 1466, average waiting time - 33(33,4,33,4), reward - 244
-action - 120, total waiting time - 1620, average waiting time - 33(33,4,33,4), reward - -154
-action - 121, total waiting time - 2415, average waiting time - 33(33,4,33,4), reward - -795
-action - 122, total waiting time - 1923, average waiting time - 33(33,4,33,4), reward - 492
-action - 123, total waiting time - 1669, average waiting time - 33(33,4,33,4), reward - 254
-action - 124, total waiting time - 1645, average waiting time - 33(33,4,33,4), reward - 24
-action - 125, total waiting time - 1773, average waiting time - 33(33,4,33,4), reward - -128
-action - 126, total waiting time - 2134, average waiting time - 33(33,4,33,4), reward - -361
-action - 127, total waiting time - 2395, average waiting time - 33(33,4,33,4), reward - -261
-action - 128, total waiting time - 1946, average waiting time - 33(33,4,33,4), reward - 449
-action - 129, total waiting time - 1750, average waiting time - 33(33,4,33,4), reward - 196
-action - 130, total waiting time - 1464, average waiting time - 33(33,4,33,4), reward - 286
-action - 131, total waiting time - 1843, average waiting time - 33(33,4,33,4), reward - -379
-action - 132, total waiting time - 1748, average waiting time - 33(33,4,33,4), reward - 95
-action - 133, total waiting time - 2531, average waiting time - 33(33,4,33,4), reward - -783
-action - 134, total waiting time - 2129, average waiting time - 33(33,4,33,4), reward - 402
+action - 1, total waiting time - 39, action - (33,4,33,4), reward - -39
+action - 2, total waiting time - 23, action - (33,4,33,4), reward - 16
+action - 3, total waiting time - 83, action - (33,4,33,4), reward - -60
+action - 4, total waiting time - 39, action - (33,4,33,4), reward - 44
+action - 5, total waiting time - 62, action - (33,4,33,4), reward - -23
+action - 6, total waiting time - 141, action - (33,4,33,4), reward - -79
+action - 7, total waiting time - 125, action - (33,4,33,4), reward - 16
+action - 8, total waiting time - 39, action - (33,4,33,4), reward - 86
+action - 9, total waiting time - 207, action - (33,4,33,4), reward - -168
+action - 10, total waiting time - 143, action - (33,4,33,4), reward - 64
+action - 11, total waiting time - 209, action - (33,4,33,4), reward - -66
+action - 12, total waiting time - 125, action - (33,4,33,4), reward - 84
+action - 13, total waiting time - 135, action - (33,4,33,4), reward - -10
+action - 14, total waiting time - 305, action - (33,4,33,4), reward - -170
+action - 15, total waiting time - 119, action - (33,4,33,4), reward - 186
+action - 16, total waiting time - 51, action - (33,4,33,4), reward - 68
+action - 17, total waiting time - 28, action - (33,4,33,4), reward - 23
+action - 18, total waiting time - 26, action - (33,4,33,4), reward - 2
+action - 19, total waiting time - 67, action - (33,4,33,4), reward - -41
+action - 20, total waiting time - 75, action - (33,4,33,4), reward - -8
+action - 21, total waiting time - 0, action - (33,4,33,4), reward - 75
+action - 22, total waiting time - 68, action - (33,4,33,4), reward - -68
+action - 23, total waiting time - 100, action - (33,4,33,4), reward - -32
+action - 24, total waiting time - 19, action - (33,4,33,4), reward - 81
+action - 25, total waiting time - 390, action - (33,4,33,4), reward - -371
+action - 26, total waiting time - 699, action - (33,4,33,4), reward - -309
+action - 27, total waiting time - 1039, action - (33,4,33,4), reward - -340
+action - 28, total waiting time - 1317, action - (33,4,33,4), reward - -278
+action - 29, total waiting time - 2259, action - (33,4,33,4), reward - -942
+action - 30, total waiting time - 2549, action - (33,4,33,4), reward - -290
+action - 31, total waiting time - 2564, action - (33,4,33,4), reward - -15
+action - 32, total waiting time - 2945, action - (33,4,33,4), reward - -381
+action - 33, total waiting time - 2881, action - (33,4,33,4), reward - 64
+action - 34, total waiting time - 2751, action - (33,4,33,4), reward - 130
+action - 35, total waiting time - 2683, action - (33,4,33,4), reward - 68
+action - 36, total waiting time - 2822, action - (33,4,33,4), reward - -139
+action - 37, total waiting time - 2975, action - (33,4,33,4), reward - -153
+action - 38, total waiting time - 2206, action - (33,4,33,4), reward - 769
+action - 39, total waiting time - 2026, action - (33,4,33,4), reward - 180
+action - 40, total waiting time - 1529, action - (33,4,33,4), reward - 497
+action - 41, total waiting time - 1534, action - (33,4,33,4), reward - -5
+action - 42, total waiting time - 1626, action - (33,4,33,4), reward - -92
+action - 43, total waiting time - 783, action - (33,4,33,4), reward - 843
+action - 44, total waiting time - 1080, action - (33,4,33,4), reward - -297
+action - 45, total waiting time - 981, action - (33,4,33,4), reward - 99
+action - 46, total waiting time - 982, action - (33,4,33,4), reward - -1
+action - 47, total waiting time - 918, action - (33,4,33,4), reward - 64
+action - 48, total waiting time - 1015, action - (33,4,33,4), reward - -97
+action - 49, total waiting time - 1031, action - (33,4,33,4), reward - -16
+action - 50, total waiting time - 943, action - (33,4,33,4), reward - 88
+action - 51, total waiting time - 1007, action - (33,4,33,4), reward - -64
+action - 52, total waiting time - 812, action - (33,4,33,4), reward - 195
+action - 53, total waiting time - 959, action - (33,4,33,4), reward - -147
+action - 54, total waiting time - 941, action - (33,4,33,4), reward - 18
+action - 55, total waiting time - 960, action - (33,4,33,4), reward - -19
+action - 56, total waiting time - 1193, action - (33,4,33,4), reward - -233
+action - 57, total waiting time - 1033, action - (33,4,33,4), reward - 160
+action - 58, total waiting time - 780, action - (33,4,33,4), reward - 253
+action - 59, total waiting time - 731, action - (33,4,33,4), reward - 49
+action - 60, total waiting time - 1276, action - (33,4,33,4), reward - -545
+action - 61, total waiting time - 1020, action - (33,4,33,4), reward - 256
+action - 62, total waiting time - 1027, action - (33,4,33,4), reward - -7
+action - 63, total waiting time - 955, action - (33,4,33,4), reward - 72
+action - 64, total waiting time - 794, action - (33,4,33,4), reward - 161
+action - 65, total waiting time - 806, action - (33,4,33,4), reward - -12
+action - 66, total waiting time - 939, action - (33,4,33,4), reward - -133
+action - 67, total waiting time - 886, action - (33,4,33,4), reward - 53
+action - 68, total waiting time - 960, action - (33,4,33,4), reward - -74
+action - 69, total waiting time - 883, action - (33,4,33,4), reward - 77
+action - 70, total waiting time - 845, action - (33,4,33,4), reward - 38
+action - 71, total waiting time - 1174, action - (33,4,33,4), reward - -329
+action - 72, total waiting time - 740, action - (33,4,33,4), reward - 434
+action - 73, total waiting time - 673, action - (33,4,33,4), reward - 67
+action - 74, total waiting time - 409, action - (33,4,33,4), reward - 264
+action - 75, total waiting time - 21, action - (33,4,33,4), reward - 388
+action - 76, total waiting time - 0, action - (33,4,33,4), reward - 21

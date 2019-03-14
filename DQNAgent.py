@@ -45,7 +45,7 @@ class DQNAgent:
         self.TD_list = np.array([])
         self.Num_batch = 4
         self.Num_replay_memory = 50000
-        self.replay_memory = []
+        self.replay_memory = deque(maxlen=M)
 
 
     def _build_model(self):
@@ -88,7 +88,7 @@ class DQNAgent:
         
         # Duc Anh implementation:
         # self.memory.append((state, action, reward, next_state, done))
-        
+
         # Duy Do ver1: change MEMORY Implementation:
         # experience = state, action, reward, next_state, done
         # self.memory.store(experience)

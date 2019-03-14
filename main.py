@@ -16,7 +16,7 @@ else:
 
 import traci
 
-sumoBinary = "/usr/bin/sumo-gui"
+sumoBinary = "/usr/bin/sumo"
 sumoConfig = "sumoconfig.sumoconfig"
 
 def cal_waiting_time():
@@ -26,7 +26,7 @@ def main():
     training = False
     # Control code here
     memory_size = 20000                                     # size memory
-    mini_batch_size = 4                                    # minibatch_size
+    mini_batch_size = 64                                    # minibatch_size
     a_dec = 4.5                                             # m/s^2
     num_of_phase = 2                                        # 2 phase
     action_space_size = num_of_phase * 2 + 1                # 5 actions
@@ -44,7 +44,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v9_esilon_waiting_time_full_step.h5')
+        agent.load('Models/reinf_traf_control_v9_priority_experience_replay_new_simulation.h5')
     except:
         print('No models found')
 
@@ -112,7 +112,7 @@ def main():
                 # waiting_time += cal_waiting_time()
                 traci.simulationStep()
             #  ============================================================ Finish action ======================:
-            
+
             # calculate REWARD
             waiting_time += cal_waiting_time()
             waiting_time_t1 = waiting_time
@@ -125,11 +125,11 @@ def main():
             # stored EXP/Tuple
             if (training == False):
                 agent.remember(state, action, reward_t, new_state, False)
-            
+
             # reassign
             state = new_state
             numb_of_cycle += 1
-            print '------------------------------------------- step - ',numb_of_cycle, numb_of_cycle/300,'% - ', action_time, ' --------------------'
+            print '-------------------------step - ',numb_of_cycle, numb_of_cycle/300,'% - ', action_time, ' --------------------'
 
             if (len(agent.replay_memory) > agent.minibatch_size) & (numb_of_cycle > agent.tp):
                 agent.storeTraining(state,action,reward_t,new_state, False)
@@ -137,7 +137,7 @@ def main():
                 agent.replay()
                 agent.start_epsilon -= agent.epsilon_decay
 
-        agent.save('Models/reinf_traf_control_v8_esilon_waiting_time_full_step.h5')
+        agent.save('Models/reinf_traf_control_v9_priority_experience_replay_new_simulation.h5')
         traci.close(wait=False)
 
 if __name__ == '__main__':
