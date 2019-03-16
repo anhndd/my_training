@@ -27,10 +27,7 @@ class TargetDQNAgent:
 
         Q_value = Add()([value, A_subtract])
 
-        input_3 = Input(shape=(5,))
-        Output = Multiply()([input_3, Q_value])
-
-        model = Model(inputs=[input_1, input_2, input_3], outputs=[Output])
+        model = Model(inputs=[input_1, input_2], outputs=[Q_value])
         # model.compile(optimizer= Adam(lr=self.epsilon_r), loss='mse')
 
         return model

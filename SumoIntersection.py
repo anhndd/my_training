@@ -592,7 +592,7 @@ class SumoIntersection:
         #     tentative_action_matrix = tentative_action[action]
         # print  tentative_action_matrix
         tentative_action_matrix = tentative_action[action]
-        return [output, I, tentative_action_matrix]
+        return [output, I], tentative_action_matrix
 
     def cal_yellow_phase(self, id_list, a_dec):
         v_on_road = []

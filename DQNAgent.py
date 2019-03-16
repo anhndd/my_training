@@ -66,11 +66,11 @@ class DQNAgent:
         A_subtract = Subtract()([advantage, A])
 
         Q_value = Add()([value, A_subtract])
+        #
+        # input_3 = Input(shape=(5,))
+        # Output = Multiply()([input_3, Q_value])
 
-        input_3 = Input(shape=(5,))
-        Output = Multiply()([input_3, Q_value])
-
-        model = Model(inputs=[input_1, input_2, input_3], outputs=[Output])
+        model = Model(inputs=[input_1, input_2], outputs=[Q_value])
         model.compile(optimizer= Adam(lr=self.epsilon_r), loss='mse')
 
         return model
@@ -87,7 +87,7 @@ class DQNAgent:
     def remember(self, state, action, reward, next_state, done):
         
         # Duc Anh implementation:
-        # self.memory.append((state, action, reward, next_state, done))
+        self.replay_memory.append((state, action, reward, next_state, done))
 
         # Duy Do ver1: change MEMORY Implementation:
         # experience = state, action, reward, next_state, done
@@ -95,16 +95,17 @@ class DQNAgent:
 
 
         # Duy Do ver 2 (PER)
-        self.experience_replay(state, action, reward, next_state, done)
+        # self.experience_replay(state, action, reward, next_state, done)
         
 
         # add to TD_list.
         # self.TD_list = np.append(self.TD_list, pow((abs(reward) + self.eps), self.alpha))
 
     # select action random || by model.
-    def select_action(self,state):
-        if (state[2][0][1] == 0):
-            return np.argmax(state[2])
+    def select_action(self,state, tentative_act_dec):
+        # print tentative_act_dec, tentative_act_dec[0], 'max = ',np.argmax(tentative_act_dec[0])
+        if (tentative_act_dec[0][1] == 0):
+            return np.argmax(tentative_act_dec[0])
         if np.random.rand() <= self.start_epsilon:
             return random.randrange(self.action_size)
         else:
@@ -145,6 +146,7 @@ class DQNAgent:
 
     def replay(self):
         minibatch, w_batch, batch_index  = self.prioritized_minibatch()
+        minibatch = random.sample(self.replay_memory, self.minibatch_size)
         J = 0
         # absolute_errors = []
         for s, a, r, next_s, done in minibatch:

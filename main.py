@@ -44,7 +44,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v9_priority_experience_replay_new_simulation.h5')
+        agent.load('Models/reinf_traf_control_v11_fix_Q_value.h5')
     except:
         print('No models found')
 
@@ -69,7 +69,7 @@ def main():
         action_time = [33,33]
 
         # getState by action.
-        state = sumo_int.getState(I, action, tentative_action)
+        state, tentative_act_dec = sumo_int.getState(I, action, tentative_action)
 
         # break traning and save model.
         if numb_of_cycle > 30000:
@@ -84,7 +84,7 @@ def main():
             waiting_time = 0
 
             # get action.
-            action = agent.select_action(state)
+            action = agent.select_action(state, tentative_act_dec)
 
             #  ============================================================ Perform action ======================:
             for j in range(num_of_phase):
@@ -120,11 +120,11 @@ def main():
             waiting_time_t = waiting_time_t1
 
             # get NewState by selected-action
-            new_state = sumo_int.getState(I, action, tentative_action)
+            new_state, tentative_act_dec = sumo_int.getState(I, action, tentative_action)
 
             # stored EXP/Tuple
-            if (training == False):
-                agent.remember(state, action, reward_t, new_state, False)
+            # if (training == False):
+            agent.remember(state, action, reward_t, new_state, False)
 
             # reassign
             state = new_state
@@ -132,12 +132,12 @@ def main():
             print '-------------------------step - ',numb_of_cycle, numb_of_cycle/300,'% - ', action_time, ' --------------------'
 
             if (len(agent.replay_memory) > agent.minibatch_size) & (numb_of_cycle > agent.tp):
-                agent.storeTraining(state,action,reward_t,new_state, False)
-                training = True
+                # agent.storeTraining(state,action,reward_t,new_state, False)
+                # training = True
                 agent.replay()
                 agent.start_epsilon -= agent.epsilon_decay
 
-        agent.save('Models/reinf_traf_control_v9_priority_experience_replay_new_simulation.h5')
+        agent.save('Models/reinf_traf_control_v11_fix_Q_value.h5')
         traci.close(wait=False)
 
 if __name__ == '__main__':
