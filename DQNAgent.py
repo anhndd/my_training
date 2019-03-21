@@ -145,7 +145,7 @@ class DQNAgent:
 
 
     def replay(self):
-        minibatch, w_batch, batch_index  = self.prioritized_minibatch()
+        # minibatch, w_batch, batch_index  = self.prioritized_minibatch()
         minibatch = random.sample(self.replay_memory, self.minibatch_size)
         J = 0
         # absolute_errors = []

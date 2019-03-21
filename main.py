@@ -47,7 +47,7 @@ def main():
         agent.load('Models/reinf_traf_control_v11_fix_Q_value.h5')
     except:
         print('No models found')
-
+    # agent.start_epsilon = 0
     # new Sumo Intersection
     sumo_int = SumoIntersection.SumoIntersection()
 

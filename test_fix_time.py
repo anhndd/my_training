@@ -19,7 +19,7 @@ else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
 
 sumoBinary = "/usr/bin/sumo-gui"
-sumoConfig = "sumoconfig.sumoconfig"
+sumoConfig = "test/sumoconfig.sumoconfig"
 import traci
 
 
@@ -44,7 +44,7 @@ def main():
     action_space = phase_number * 2 + 1
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
     I = np.full((action_space, action_space), 0.5).reshape(1, action_space, action_space)
-    action_time = [33, 33]
+    action_time = [40, 40]
     idLightControl = '4628048104'
     waiting_time_t = 0
     waiting_time_t1 = 0

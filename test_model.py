@@ -17,7 +17,7 @@ else:
 import traci
 
 sumoBinary = "/usr/bin/sumo-gui"
-sumoConfig = "sumoconfig.sumoconfig"
+sumoConfig = "test/sumoconfig.sumoconfig"
 
 
 def cal_waiting_time():
@@ -57,7 +57,7 @@ def main():
         agent.load('Models/reinf_traf_control_v11_fix_Q_value.h5')
     except:
         print('No models found')
-
+    agent.start_epsilon = 0
     # new Sumo Intersection
     sumo_int = SumoIntersection.SumoIntersection()
 
@@ -152,10 +152,10 @@ def main():
 
             # reassign
             state = new_state
-
+            numb_of_cycle+=1
             print('action - ' + '(' + str(action_time[0]) + ',' + str(
                 yellow_time1) + ',' + str(action_time[1]) + ',' + str(yellow_time2) + ')')
-            log.write('action - ' + str(i) + ', total waiting time - ' +
+            log.write('action - ' + str(numb_of_cycle) + ', total waiting time - ' +
                       str(waiting_time) + ', action - ' + '(' + str(action_time[0]) + ',' + str(
                 yellow_time1) + ',' + str(action_time[1]) + ',' + str(yellow_time2) + ')' + ', reward - ' + str(
                 reward_t) + '\n')
