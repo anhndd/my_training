@@ -17,11 +17,12 @@ class DQNAgent:
         # self.memory = deque(maxlen=M)
         
         # Duy Do:
-        # self.memory = Memory.Memory(M)
-        self.PER_e = 0.01  # Hyperparameter that we use to avoid self.memorysome experiences to have 0 probability of being taken
-        self.PER_a = 0.6  # Hyperparameter that we use to make a tradeoff between taking only exp with high priority and sampling randomly
-        self.PER_b = 0.4  # importance-sampling, from initial value increasing to 1
-        self.PER_b_increment_per_sampling = 0.001
+        # TODO: config again.
+        self.Num_Exploration = 2000	                                            
+        self.Num_Training    = 50000
+        self.Num_Testing     = 250000
+        self.progress = ''
+        self.step = 1
 
         self.minibatch_size = B
         self.start_epsilon = 1
@@ -74,32 +75,39 @@ class DQNAgent:
         model.compile(optimizer= Adam(lr=self.epsilon_r), loss='mse')
 
         return model
-    
-    def experience_replay(self, state, action, reward, next_state, terminal):
 
-                self.replay_memory.append([state, action, reward, next_state, terminal])
-                self.TD_list = np.append(self.TD_list, pow((abs(reward) + self.eps), self.alpha))
-                '''
-                    alpha: 0.6
-                    eps: 0.00001
-                '''
+    # def remember(self, state, action, reward, next_state, done):
+    #     # Duc Anh implementation:
+    #     self.replay_memory.append((state, action, reward, next_state, done))
 
-    def remember(self, state, action, reward, next_state, done):
-        
-        # Duc Anh implementation:
-        self.replay_memory.append((state, action, reward, next_state, done))
+    def store_tuple(self, state, action, reward, next_state, terminal):
+        # Num_replay_memory = 50.000
+        # If Replay memory is longer than Num_replay_memory, delete the oldest one
+		if len(self.replay_memory) >= self.Num_replay_memory:
+			del self.replay_memory[0]
+			self.TD_list = np.delete(self.TD_list, 0)
 
-        # Duy Do ver1: change MEMORY Implementation:
-        # experience = state, action, reward, next_state, done
-        # self.memory.store(experience)
+		if self.progress == 'Exploring':
+			self.replay_memory.append([state, action, reward, next_state, terminal])
+			self.TD_list = np.append(self.TD_list, pow((abs(reward) + self.eps), self.alpha))
+			'''
+				alpha: 0.6
+				eps: 0.00001
+			'''
 
+		elif self.progress == 'Training':
+			self.replay_memory.append([state, action, reward, next_state, terminal])
+			# ################################################## PER ############################################################
+            # cal TD_error:
+			Q_value_comma = self.model.predict(next_state)[0]                                       # Q-value(s') -- PrimaryModel
+			a_comma = np.argmax(Q_value_comma)                                                      # pick a' cause maxQ-value(s')
+			Q_target = reward + self.gamma * self.targetDQN.model.predict(next_state)[0][a_comma]   # a number
+			target_f = self.model.predict(state)                                                    #  Q value Q(s,a,theta)
+			Q_value = target_f[0][action]
 
-        # Duy Do ver 2 (PER)
-        # self.experience_replay(state, action, reward, next_state, done)
-        
-
-        # add to TD_list.
-        # self.TD_list = np.append(self.TD_list, pow((abs(reward) + self.eps), self.alpha))
+            # append TD_error:
+			self.TD_list = np.append(self.TD_list, pow((abs(Q_target-Q_value) + self.eps), self.alpha))
+			# ###################################################################################################################
 
     # select action random || by model.
     def select_action(self,state, tentative_act_dec):
@@ -127,7 +135,6 @@ class DQNAgent:
                     TD_index = np.nonzero(TD_sum >= rand_batch)[0][0]
                     batch_index.append(TD_index)
                     w_batch.append(weight_is[TD_index])
-
                     minibatch.append(self.replay_memory[TD_index])
                 return minibatch, w_batch, batch_index
     
@@ -142,32 +149,77 @@ class DQNAgent:
         self.replay_memory.append([state, action, reward, next_state, done])
         self.TD_list = np.append(self.TD_list, pow((abs(Q_target-Q_value) + self.eps), self.alpha))
 
+    def get_progress(self):
+		progress = ''
+		# print 'Num_Exploration: ', self.Num_Exploration		# 1000
+		# print 'Num_Training: ', self.Num_Training				# 500.000
+		# if current_step <= num_exploration
+		if self.step <= self.Num_Exploration:
+			progress = 'Exploring'
+		elif self.step <= self.Num_Exploration + self.Num_Training:
+			progress = 'Training'
+		elif self.step <= self.Num_Exploration + self.Num_Training + self.Num_Testing:
+			progress = 'Testing'
+		else:
+			progress = 'Finished'
+
+		return progress
+
+    def train(self, minibatch, w_batch, batch_index):
+
+		# Save the each batch batch data
+		state_batch      = [batch[0] for batch in minibatch]
+		action_batch     = [batch[1] for batch in minibatch]
+		reward_batch     = [batch[2] for batch in minibatch]
+		next_state_batch = [batch[3] for batch in minibatch]
+		terminal_batch   = [batch[4] for batch in minibatch]
+
+		# Get y_prediction (list of Q-target in minibatch)
+		y_batch = []
+		# 
+		Q_batch = self.output_target.eval(feed_dict = {self.input_target: next_state_batch})	# len = 32
+
+		# Get Q-target values
+		for i in range(len(minibatch)):
+			if terminal_batch[i] == True:
+				y_batch.append(reward_batch[i])
+			else:
+				y_batch.append(reward_batch[i] + self.gamma * np.max(Q_batch[i]))	# Q_target = r + maxQ(s')
+
+		# calculate TD_error of mini batch
+		_, self.loss, TD_error_batch = self.sess.run([self.train_step, self.loss_train, self.TD_error], feed_dict = {self.action_target: action_batch,
+										 										      									self.y_target: y_batch,
+										 									  	      									self.input: state_batch,
+																														self.w_is: w_batch})
+		# print 'TD_error_batch: ', TD_error_batch #
+		# print 'TD_error_batch len', len(TD_error_batch) # 32
+		
+		# Update TD_list
+		for i_batch in range(len(batch_index)):
+			self.TD_list[batch_index[i_batch]] = pow((abs(TD_error_batch[i_batch]) + self.eps), self.alpha)
+
+		# Update Beta
+		self.beta = self.beta + (1 - self.beta_init) / self.Num_Training
 
 
-    def replay(self):
-        # minibatch, w_batch, batch_index  = self.prioritized_minibatch()
-        minibatch = random.sample(self.replay_memory, self.minibatch_size)
+    def replay(self,minibatch, w_batch, batch_index):
+        
+        # DucAnh implementation (no PER)
+        # minibatch = random.sample(self.replay_memory, self.minibatch_size)
+        
         J = 0
-        # absolute_errors = []
         for s, a, r, next_s, done in minibatch:
             if not done:
-                
                 Q_value_comma = self.model.predict(next_s)[0]               # Q-value(s') -- PrimaryModel
-                
                 a_comma = np.argmax(Q_value_comma)                          # pick a' cause maxQ-value(s')
-
                 Q_target = r + self.gamma * self.targetDQN.model.predict(next_s)[0][a_comma]    # a number
-
                 target_f = self.model.predict(s)    # Q value Q(s,a,theta)
-                
                 Q_value = target_f[0][a]
-                
                 TD_error = Q_target - Q_value
-
                 target_f[0][a] = Q_target
-                
                 self.model.fit(s, target_f, epochs=1, verbose=0,batch_size=self.minibatch_size)
         
+        # TODO: is it updating Target_NEtwork?
         self.targetDQN.replay(self.model.get_weights())
 
         # TODO: TD-error?
@@ -179,53 +231,3 @@ class DQNAgent:
 
     def save(self, name):
         self.model.save_weights(name)
-    
-    def init_sess(self):
-        # Initialize variables
-		config = tf.ConfigProto()
-		# config.gpu_options.per_process_gpu_memory_fraction = self.GPU_fraction
-
-		sess = tf.InteractiveSession(config=config)
-
-		# Make folder for save data
-		# os.makedirs('saved_networks/' + self.game_name + '/' + self.date_time + '_' + self.algorithm)
-
-		# Summary for tensorboard
-		summary_placeholders, update_ops, summary_op = self.setup_summary()
-		# summary_writer = tf.summary.FileWriter('saved_networks/' + self.game_name + '/' + self.date_time + '_' + self.algorithm, sess.graph)
-
-		init = tf.global_variables_initializer()
-		sess.run(init)
-
-		# Load the file if the saved file exists
-		saver = tf.train.Saver()
-		# check_save = 1
-		check_save = input('Load Model? (1=yes/2=no): ')
-
-		if check_save == 1:
-			# Restore variables from disk.
-			saver.restore(sess, self.load_path + "/model.ckpt")
-			print("Model restored.")
-
-			check_train = input('Inference or Training? (1=Inference / 2=Training): ')
-			if check_train == 1:
-				self.Num_Exploration = 0
-				self.Num_Training = 0
-
-		return sess, saver, summary_placeholders, update_ops, summary_op
-    # Code for tensorboard
-    def setup_summary(self):
-	    episode_score = tf.Variable(0.)
-	    episode_maxQ = tf.Variable(0.)
-	    episode_loss = tf.Variable(0.)
-
-	    tf.summary.scalar('Average Score/' + str(self.Num_plot_episode) + ' episodes', episode_score)
-	    tf.summary.scalar('Average MaxQ/' + str(self.Num_plot_episode) + ' episodes', episode_maxQ)
-	    tf.summary.scalar('Average Loss/' + str(self.Num_plot_episode) + ' episodes', episode_loss)
-
-	    summary_vars = [episode_score, episode_maxQ, episode_loss]
-
-	    summary_placeholders = [tf.placeholder(tf.float32) for _ in range(len(summary_vars))]
-	    update_ops = [summary_vars[i].assign(summary_placeholders[i]) for i in range(len(summary_vars))]
-	    summary_op = tf.summary.merge_all()
-	    return summary_placeholders, update_ops, summary_op

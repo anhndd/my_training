@@ -23,7 +23,7 @@ def cal_waiting_time():
     return (traci.edge.getWaitingTime('gneE21') + traci.edge.getWaitingTime('gneE86') + traci.edge.getWaitingTime('gneE89') + traci.edge.getWaitingTime('gneE85')) # waiting_time
 
 def main():
-    training = False
+
     # Control code here
     memory_size = 20000                                     # size memory
     mini_batch_size = 64                                    # minibatch_size
@@ -83,6 +83,9 @@ def main():
 
             waiting_time = 0
 
+            # Get progress?
+            agent.progress = agent.get_progress()
+
             # get action.
             action = agent.select_action(state, tentative_act_dec)
 
@@ -122,20 +125,32 @@ def main():
             # get NewState by selected-action
             new_state, tentative_act_dec = sumo_int.getState(I, action, tentative_action)
 
-            # stored EXP/Tuple
-            # if (training == False):
-            agent.remember(state, action, reward_t, new_state, False)
+
+            # Case 1: Experience Replay (store tuple)
+            agent.store_tuple(state, action, reward_t, new_state, False)
+            
+            # Case 2: stored EXP/Tuple
+            # agent.remember(state, action, reward_t, new_state, False)
 
             # reassign
             state = new_state
             numb_of_cycle += 1
-            print '-------------------------step - ',numb_of_cycle, numb_of_cycle/300,'% - ', action_time, ' --------------------'
+            agent.step += 1
 
-            if (len(agent.replay_memory) > agent.minibatch_size) & (numb_of_cycle > agent.tp):
-                # agent.storeTraining(state,action,reward_t,new_state, False)
-                # training = True
-                agent.replay()
-                agent.start_epsilon -= agent.epsilon_decay
+            print '-------------------------step - ',numb_of_cycle, numb_of_cycle/300,'% - ', action_time, ' --------------------'
+            
+            if agent.progress == 'Training':
+                # step 1: if agent.step % 100 == 0 then update weights of target_network.
+                # ......... thinking ....................
+
+                # step 2: get mini_batch?
+				minibatch, w_batch, batch_index  = agent.prioritized_minibatch()
+
+                # step 3: train.
+				agent.replay(minibatch, w_batch, batch_index)
+
+                # step 4: update epsilon:
+				agent.start_epsilon -= agent.epsilon_decay
 
         agent.save('Models/reinf_traf_control_v11_fix_Q_value.h5')
         traci.close(wait=False)
