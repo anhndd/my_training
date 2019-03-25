@@ -48,6 +48,11 @@ class DQNAgent:
         self.Num_replay_memory = 50000
         self.replay_memory = deque(maxlen=M)
 
+        self.log = open('Logs_result/log-loss.txt', 'a')
+        self.i = 0
+        self.min_loss = 3000000
+        self.min_loss_step = 0
+
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
@@ -201,7 +206,6 @@ class DQNAgent:
 		# Update Beta
 		self.beta = self.beta + (1 - self.beta_init) / self.Num_Training
 
-
     def replay(self,minibatch, w_batch, batch_index):
         
         # DucAnh implementation (no PER)
@@ -215,10 +219,23 @@ class DQNAgent:
                 Q_target = r + self.gamma * self.targetDQN.model.predict(next_s)[0][a_comma]    # a number
                 target_f = self.model.predict(s)    # Q value Q(s,a,theta)
                 Q_value = target_f[0][a]
-                TD_error = Q_target - Q_value
+
+                # calculate loss for log
+                TD_error = (Q_target - Q_value)*(Q_target - Q_value)
+                J += TD_error
+
                 target_f[0][a] = Q_target
                 self.model.fit(s, target_f, epochs=1, verbose=0,batch_size=self.minibatch_size)
-        
+
+        J = J/self.minibatch_size
+        self.i+=1
+        if(self.min_loss > J):
+            self.min_loss = J
+            self.min_loss_step = self.i
+        self.min_loss = min(self.min_loss,J)
+        print '------------------------- loss ' , J , '-----------------------------------------------------------------------------'
+        self.log.write('loss ' + str(J) + ' - step ' + str(self.i) + ' - min_loss ' + str(self.min_loss) + ' - min_loss_step ' + str(self.min_loss_step) + '\n')
+
         # TODO: is it updating Target_NEtwork?
         self.targetDQN.replay(self.model.get_weights())
 
