@@ -475,6 +475,8 @@ class PER:
 		
 		# Update TD_list
 		for i_batch in range(len(batch_index)):
+			print 'OLD VALUE: ', self.TD_list[batch_index[i_batch]]
+			print 'NEW VALUE: ', pow((abs(TD_error_batch[i_batch]) + self.eps), self.alpha)
 			self.TD_list[batch_index[i_batch]] = pow((abs(TD_error_batch[i_batch]) + self.eps), self.alpha)
 
 		# Update Beta
@@ -509,8 +511,6 @@ class PER:
 				self.step_old = self.step
 		else:
 			self.step_old = self.step
-
-
 
 	def if_terminal(self, game_state):
 		# Show Progress

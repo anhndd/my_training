@@ -139,7 +139,8 @@ def main():
 
             print '-------------------------step - ',numb_of_cycle, numb_of_cycle/300,'% - ', action_time, ' --------------------'
             
-            if agent.progress == 'Training':
+            # if agent.progress == 'Training':
+            if numb_of_cycle >= 65:
                 # step 1: if agent.step % 100 == 0 then update weights of target_network.
                 # ......... thinking ....................
 
