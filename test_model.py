@@ -17,7 +17,7 @@ else:
 import traci
 
 sumoBinary = "/usr/bin/sumo-gui"
-sumoConfig = "sumoconfig.sumoconfig"
+sumoConfig = "test_2/sumoconfig.sumoconfig"
 
 
 def cal_waiting_time():
@@ -54,7 +54,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v12_PER.h5')
+        agent.load('test/reinf_traf_control_v11_fix_Q_value.h5')
     except:
         print('No models found')
     agent.start_epsilon = 0
