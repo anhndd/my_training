@@ -417,6 +417,8 @@ class PER:
 			self.sess.run(tf.assign(trainable_variables_target[i], trainable_variables_network[i]))
 
 	################################################## PER ############################################################
+
+	# TODO: what for?
 	def prioritized_minibatch(self):
 		# TD_normalized = cal prob of each exp (through TD_error)
 		TD_normalized = self.TD_list / np.linalg.norm(self.TD_list, 1)
@@ -427,7 +429,9 @@ class PER:
 		TD_sum = np.cumsum(TD_normalized)
 
 		# Get importance sampling weights
+		# Num_replay_memory: max_size_memory
 		weight_is = np.power((self.Num_replay_memory * TD_normalized), - self.beta)
+		# weight_is:  [1.40350846 1.40350846 1.40350846 ... 1.40350846 1.40350846 0.13348569]
 
 		weight_is = weight_is / np.max(weight_is)
 

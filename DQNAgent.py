@@ -8,10 +8,10 @@ import numpy as np
 import random
 import tensorflow as tf
 import os
-
+import constants
+import time
 
 class DQNAgent:
-    
     def __init__(self, M, action_size, B):
         
         # Duc Anh Implement:
@@ -19,9 +19,9 @@ class DQNAgent:
         
         # Duy Do:
         # TODO: config again.
-        self.Num_Exploration = 2000	                            # 2000 steps to explore.                                      
-        self.Num_Training    = 30000
-        self.Num_Testing     = 250000
+        self.Num_Exploration = constants.Num_Exploration	    # 2000 steps to explore.                                      
+        self.Num_Training    = constants.Num_Training           # TODO?
+        self.Num_Testing     = constants.Num_Testing
         self.progress = ''
         self.step = 0
 
@@ -44,9 +44,11 @@ class DQNAgent:
         self.alpha_per = 0.6
         self.beta_init = 0.4
         self.beta = self.beta_init
+
+        # transform to deque(maxlen=M);
         self.TD_list = np.array([])
         self.Num_batch = 64
-        self.Num_replay_memory = 50000
+        self.max_len_replay_memory = M
         self.replay_memory = deque(maxlen=M)
 
         self.log = open('Logs_result/log-loss.txt', 'a')
@@ -81,17 +83,21 @@ class DQNAgent:
         return model
 
     def store_tuple(self, state, action, reward, next_state, terminal):
-		# Num_replay_memory = 50.000
-		# replay_memory: 20.000 max
-		# If Replay memory is longer than Num_replay_memory, delete the oldest one
-        if len(self.replay_memory) >= self.Num_replay_memory:
-            del self.replay_memory[0]
+        # if replay_memory and TD_list  are full:
+        if len(self.replay_memory) >= self.max_len_replay_memory:
+            # step 1: replay_memory (deuque): no need to delete first element.
+            # step 2: TD_list: delete first element.
             self.TD_list = np.delete(self.TD_list, 0)
 
+        # if, agent is exploring:
         if self.progress == 'Exploring':
+            # save tuple
             self.replay_memory.append([state, action, reward, next_state, terminal])
+            # save TD_error (for PER) 
+            # note: reward ~ td_error when agent is exploring.
             self.TD_list = np.append(self.TD_list, pow((abs(reward) + self.eps), self.alpha_per))
 
+        # if, agent is trained.
         elif self.progress == 'Training':
             self.replay_memory.append([state, action, reward, next_state, terminal])
 			# ################################################## PER ############################################################
@@ -101,7 +107,6 @@ class DQNAgent:
             Q_target = reward + self.gamma * self.targetDQN.model.predict(next_state)[0][a_comma]   # a number
             target_f = self.model.predict(state)                                                    #  Q value Q(s,a,theta)
             Q_value = target_f[0][action]
-
             # append TD_error:
             self.TD_list = np.append(self.TD_list, pow((abs(Q_target-Q_value) + self.eps), self.alpha_per))
 			# ###################################################################################################################
@@ -117,31 +122,32 @@ class DQNAgent:
             act_values = self.model.predict(state)
             return np.argmax(act_values[0])  # returns action
     
-    def prioritized_minibatch(self):
-				# Update TD_error list
-                # print 'step: ', self.step
-                # print 'len of TD_list: ', len(self.TD_list)	
-
+    # TODO: verify this function
+    # get minibatch
+    def get_prioritized_minibatch(self):
                 '''
 		        # TD_normalized = calculate probs of each exp (through TD_list) TD_list = [1,2] >> TD_normalized = [0.3333,0.666]
                 # TD_list? 
-                    + if (exploring): TD_List.append    (reward+esp)^alpha_per
-                    + if (trainign):    TD_List.append      (td_error + esp)^alpha_per
+                    + if (exploring):   TD_List.append    (reward+esp)^alpha_per
+                    + if (training):    TD_List.append      (td_error + esp)^alpha_per
                 '''
                 TD_normalized = self.TD_list / np.linalg.norm(self.TD_list, 1)
 
                 # curcumulate sum
-                TD_sum = np.cumsum(TD_normalized)
+                TD_sum = np.cumsum(TD_normalized) 
+
 				# Get importance sampling weights
-                weight_is = np.power((self.Num_replay_memory * TD_normalized), - self.beta)
+                # (N*P(i))^-beta
+                weight_is = np.power((self.max_len_replay_memory * TD_normalized), - self.beta)
+                # cal probs.
                 weight_is = weight_is / np.max(weight_is)
                 # Select mini batch and importance sampling weights
                 minibatch = []
                 batch_index = []
                 w_batch = []
                 for i in range(self.minibatch_size):
-                    rand_batch = random.random()
-                    TD_index = np.nonzero(TD_sum >= rand_batch)[0][0]
+                    rand_batch = random.random()                                # (0,1) random
+                    TD_index = np.nonzero(TD_sum >= rand_batch)[0][0]           # ????
                     batch_index.append(TD_index)
                     w_batch.append(weight_is[TD_index])
                     minibatch.append(self.replay_memory[TD_index])
@@ -149,8 +155,6 @@ class DQNAgent:
     
     def get_progress(self):
         progress = ''
-		# print 'Num_Exploration: ', self.Num_Exploration		# 1000
-		# print 'Num_Training: ', self.Num_Training				# 500.000
 		# if current_step <= num_exploration
         if self.step <= self.Num_Exploration:
             progress = 'Exploring'
@@ -206,7 +210,7 @@ class DQNAgent:
         for i_batch in range(len(batch_index)):
             self.TD_list[batch_index[i_batch]] = pow((abs(TD_error_batch[i_batch]) + self.eps), self.alpha_per)
 
-        # TODO: Update beta.
+        # Update beta.
         self.beta = self.beta + (1 - self.beta_init) / self.Num_Training
 
     def load(self, name):

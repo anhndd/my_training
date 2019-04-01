@@ -3,6 +3,7 @@ import os
 import numpy as np
 import time
 from scipy.spatial.ckdtree import coo_entries
+import constants
 
 # split file
 import DQNAgent
@@ -25,19 +26,19 @@ def cal_waiting_time():
 def main():
 
     # Control code here
-    memory_size = 20000                                     # size memory
-    mini_batch_size = 64                                    # minibatch_size
-    a_dec = 4.5                                             # m/s^2
-    num_of_phase = 2                                        # 2 phase
+    memory_size = constants.memory_size                   # size memory
+    mini_batch_size = constants.mini_batch_size           # minibatch_size
+    a_dec = constants.a_dec                               # m/s^2
+    num_of_phase = constants.num_of_phase                 # 2 phase
     action_space_size = num_of_phase * 2 + 1                # 5 actions
-    action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]  
+    action_policy = constants.action_policy
     tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space_size),np.asarray([1,0,0,0,0]).reshape(1, action_space_size),
                         np.asarray([1,0,0,0,0]).reshape(1, action_space_size),np.asarray([1,0,0,0,0]).reshape(1, action_space_size),
                         np.asarray([1,0,0,0,0]).reshape(1, action_space_size)]
     
     # global count_action_dif_default
     I = np.full((action_space_size, action_space_size), 0.5).reshape(1, action_space_size, action_space_size)
-    idLightControl = '4628048104'
+    idLightControl = constants.idLightControl
     waiting_time_t = 0
     numb_of_cycle = 0
 
@@ -141,7 +142,7 @@ def main():
 				# ......... thinking ....................
 
 				# step 2: get mini_batch?
-                minibatch, w_batch, batch_index  = agent.prioritized_minibatch()
+                minibatch, w_batch, batch_index  = agent.get_prioritized_minibatch()
 
                 # step 3: train.
                 agent.replay(minibatch, w_batch, batch_index)
