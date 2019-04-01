@@ -151,6 +151,8 @@ class DQNAgent:
                     if len(temp_array) > 0:
                         TD_index = temp_array[0]
                     else:
+                        print ('WHAT THE FUCK IS GOING ON???????????? \n\n\n\n')
+                        time.sleep(1000)
                         TD_index = 0
 
                     # expected: weight_is.len === replaymemory.len === TD_sum.len
