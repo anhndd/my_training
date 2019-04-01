@@ -1,4 +1,4 @@
-memory_size = 20000							# 20.000
+memory_size = 20000								# 20.000
 mini_batch_size = 64							# 64
 a_dec = 4.5
 num_of_phase = 2
@@ -16,4 +16,5 @@ Num_Testing     = 250000
 
 # testing:
 # Num_Exploration = 10						# exploring in: 2.000 steps.
-
+# mini_batch_size = 4
+# memory_size = 50

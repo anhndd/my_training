@@ -87,7 +87,7 @@ def main():
             agent.progress = agent.get_progress()
             action = agent.select_action(state, tentative_act_dec)
 
-            #  ============================================================ Perform action ======================:
+            #  ============================================================ Perform action ======================
             for j in range(num_of_phase):
                 action_time[j] += action_policy[action][j]
                 if action_time[j] < 0:

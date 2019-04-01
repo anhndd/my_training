@@ -147,7 +147,25 @@ class DQNAgent:
                 w_batch = []
                 for i in range(self.minibatch_size):
                     rand_batch = random.random()                                # (0,1) random
-                    TD_index = np.nonzero(TD_sum >= rand_batch)[0][0]           # ????
+                    temp_array = np.nonzero(TD_sum >= rand_batch)[0]
+                    if len(temp_array) > 0:
+                        TD_index = temp_array[0]
+                    else:
+                        TD_index = 0
+
+                    # expected: weight_is.len === replaymemory.len === TD_sum.len
+                    if self.step > 20000:
+                        print ('len(weight_is): ', len(weight_is))
+                        print ('len(replaymemory): ', len(self.replay_memory))
+                        print ('len(TD_sum): ', len(TD_sum))
+                        print ('TD_index: ', TD_index)
+                    if TD_index > len(self.replay_memory):
+                        print ('len(weight_is): ', len(weight_is))
+                        print ('len(replaymemory): ', len(self.replay_memory))
+                        print ('len(TD_sum): ', len(TD_sum))
+                        print ('TD_index: ', TD_index)
+                        print('BUG: deuqe index out of range.')
+
                     batch_index.append(TD_index)
                     w_batch.append(weight_is[TD_index])
                     minibatch.append(self.replay_memory[TD_index])
