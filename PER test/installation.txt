@@ -1,7 +1,12 @@
 1. install pygame?
 + sudo apt-get install python-pygame
 
+
 2. install cv2?
 sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install python-opencv
+
+
+python3: pip3 install pygame
+python3: pip3 install opencv-python

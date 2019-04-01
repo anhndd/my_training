@@ -37,11 +37,10 @@ class PER:
 		self.TD_list = np.array([])
 
 		# Initial parameters
-		# self.Num_Exploration = Deep_Parameters.Num_start_training
+		# self.Num_Exploration = Deep_Parameters.Num_start_training			# 50.000
 		self.Num_Exploration = 1000	# Duy config
-		self.Num_Training    = Deep_Parameters.Num_training
+		self.Num_Training    = Deep_Parameters.Num_training					# 500.000
 		self.Num_Testing     = Deep_Parameters.Num_test
-		print 'Deep_Parameters.Num_test: ', Deep_Parameters.Num_test
 
 		self.learning_rate = Deep_Parameters.Learning_rate
 		self.gamma = Deep_Parameters.Gamma
@@ -73,7 +72,7 @@ class PER:
 
 		# Parameter for Experience Replay
 		# self.Num_replay_memory = Deep_Parameters.Num_replay_memory		# 50.000
-		self.Num_replay_memory = 10000		# 50.000
+		self.Num_replay_memory = 10000										# 50.000
 		self.Num_batch = Deep_Parameters.Num_batch	# 32
 		self.replay_memory = []
 
@@ -99,7 +98,6 @@ class PER:
 		self.maxQ_board  = 0
 		self.loss_board  = 0
 		self.step_old    = 0
-
 		# Initialize Network
 		self.input, self.output = self.network('network')
 		self.input_target, self.output_target = self.network('target')
@@ -107,7 +105,7 @@ class PER:
 		self.sess, self.saver, self.summary_placeholders, self.update_ops, self.summary_op, self.summary_writer = self.init_sess()
 
 	def main(self):
-		# Define game state50.000
+		# Define game state 50.000
 		game_state = game.GameState()
 		# Initialization
 		state = self.initialization(game_state)             # 80*80*1
@@ -116,7 +114,7 @@ class PER:
 		while True:
 			# Get progress:
 			self.progress = self.get_progress()
-
+	
 			# Select action
 			action = self.select_action(stacked_state)
 
@@ -336,6 +334,7 @@ class PER:
 
 		return train_step, action_target, y_target, Loss, w_is, TD_error_tf
 
+	# TODO: test select_action function?
 	def select_action(self, stacked_state):
 		action = np.zeros([self.Num_action])
 		action_index = 0
@@ -373,15 +372,15 @@ class PER:
 
 		return action
 
+	# store tuple into memory: 
 	def experience_replay(self, state, action, reward, next_state, terminal):
-		# If Replay memory is longer than Num_replay_memory, delete the oldest one
+		# If ReplaDe oldest one
 		if len(self.replay_memory) >= self.Num_replay_memory:
 			del self.replay_memory[0]
 			self.TD_list = np.delete(self.TD_list, 0)
 
 		if self.progress == 'Exploring':
 			self.replay_memory.append([state, action, reward, next_state, terminal])
-
 			self.TD_list = np.append(self.TD_list, pow((abs(reward) + self.eps), self.alpha))
 			'''
 				alpha: 0.6
@@ -419,8 +418,10 @@ class PER:
 
 	################################################## PER ############################################################
 	def prioritized_minibatch(self):
-		# Update TD_error list
+		# TD_normalized = cal prob of each exp (through TD_error)
 		TD_normalized = self.TD_list / np.linalg.norm(self.TD_list, 1)
+		# first time: len = 1000
+		# 1000?	num_of exploration
 
 		# Return the cumulative sum of the elements along a given axis.
 		TD_sum = np.cumsum(TD_normalized)
@@ -475,8 +476,8 @@ class PER:
 		
 		# Update TD_list
 		for i_batch in range(len(batch_index)):
-			print 'OLD VALUE: ', self.TD_list[batch_index[i_batch]]
-			print 'NEW VALUE: ', pow((abs(TD_error_batch[i_batch]) + self.eps), self.alpha)
+			# print 'OLD VALUE: ', self.TD_list[batch_index[i_batch]]
+			# print 'NEW VALUE: ', pow((abs(TD_error_batch[i_batch]) + self.eps), self.alpha)
 			self.TD_list[batch_index[i_batch]] = pow((abs(TD_error_batch[i_batch]) + self.eps), self.alpha)
 
 		# Update Beta

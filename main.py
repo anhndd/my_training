@@ -68,7 +68,6 @@ def main():
         # time for each phase
         action_time = [33,33]
 
-        # getState by action.
         state, tentative_act_dec = sumo_int.getState(I, action, tentative_action)
 
         # break traning and save model.
@@ -85,8 +84,6 @@ def main():
 
             # Get progress?
             agent.progress = agent.get_progress()
-
-            # get action.
             action = agent.select_action(state, tentative_act_dec)
 
             #  ============================================================ Perform action ======================:
@@ -126,7 +123,7 @@ def main():
             new_state, tentative_act_dec = sumo_int.getState(I, action, tentative_action)
 
 
-            # Case 1: Experience Replay (store tuple)
+            # Case 1: Experience Replay (store tuple) + store TD_error
             agent.store_tuple(state, action, reward_t, new_state, False)
             
             # Case 2: stored EXP/Tuple
@@ -137,23 +134,22 @@ def main():
             numb_of_cycle += 1
             agent.step += 1
 
-            print '-------------------------step - ',numb_of_cycle, numb_of_cycle/300,'% - ', action_time, ' --------------------'
+            print ('-------------------------step - ',numb_of_cycle, numb_of_cycle/300,'% - ', action_time, ' --------------------')
             
-            # if agent.progress == 'Training':
-            if numb_of_cycle >= 65:
-                # step 1: if agent.step % 100 == 0 then update weights of target_network.
-                # ......... thinking ....................
+            if agent.progress == 'Training':
+				# step 1: if agent.step % 100 == 0 then update weights of target_network.
+				# ......... thinking ....................
 
-                # step 2: get mini_batch?
-				minibatch, w_batch, batch_index  = agent.prioritized_minibatch()
+				# step 2: get mini_batch?
+                minibatch, w_batch, batch_index  = agent.prioritized_minibatch()
 
                 # step 3: train.
-				agent.replay(minibatch, w_batch, batch_index)
+                agent.replay(minibatch, w_batch, batch_index)
 
                 # step 4: update epsilon:
-				agent.start_epsilon -= agent.epsilon_decay
+                agent.start_epsilon -= agent.epsilon_decay
 
-        agent.save('Models/reinf_traf_control_v12_PER.h5')
+        agent.save('Models/reinf_traf_control_v14_PER.h5')
         traci.close(wait=False)
 
 if __name__ == '__main__':
