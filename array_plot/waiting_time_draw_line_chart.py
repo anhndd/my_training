@@ -39,7 +39,7 @@ def main():
     fig, axs = plt.subplots(2, 1, tight_layout=True)
     axs[0].plot(x,y)
     axs[0].plot(x2, y2)
-    axs[0].set_title('Waiting time')
+    axs[0].set_title('Average Waiting Time')
     axs[0].set_xlabel('time (s)')
     axs[0].set_ylabel('waiting time (s)')
     # fig.suptitle('Line chart', fontsize=15)

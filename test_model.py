@@ -24,6 +24,13 @@ def cal_waiting_time():
     return (traci.edge.getWaitingTime('gneE21') + traci.edge.getWaitingTime('gneE86') + traci.edge.getWaitingTime(
         'gneE89') + traci.edge.getWaitingTime('gneE85'))  # waiting_time
 
+def cal_waiting_time_average():
+    number_vehicle = (traci.edge.getLastStepVehicleNumber('gneE21')+traci.edge.getLastStepVehicleNumber('gneE86')
+      +traci.edge.getLastStepVehicleNumber('gneE89')+traci.edge.getLastStepVehicleNumber('gneE85'))
+    if number_vehicle == 0:
+        return 0
+    return (traci.edge.getWaitingTime('gneE21') + traci.edge.getWaitingTime('gneE86') + traci.edge.getWaitingTime(
+        'gneE89') + traci.edge.getWaitingTime('gneE85')) / number_vehicle  # waiting_time
 
 def main():
     log = open('Logs_result/log-model.txt', 'w')
@@ -54,7 +61,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v12_PER.h5')
+        agent.load('Models/reinf_traf_control_v14_PER.h5')
     except:
         print('No models found')
     agent.start_epsilon = 0
@@ -104,39 +111,27 @@ def main():
                 # waiting_time += cal_waiting_time()
                 traci.simulationStep()
                 time_plot.append(traci.simulation.getTime())
-                waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
-                                         traci.edge.getWaitingTime('gneE86') +
-                                         traci.edge.getWaitingTime('gneE89') +
-                                         traci.edge.getWaitingTime('gneE85'))
+                waiting_time_plot.append(cal_waiting_time_average())
             yellow_time1 = sumo_int.cal_yellow_phase(['gneE21', 'gneE89'], a_dec)
             for j in range(yellow_time1):
                 traci.trafficlight.setPhase(idLightControl, 1)
                 # waiting_time += cal_waiting_time()
                 traci.simulationStep()
                 time_plot.append(traci.simulation.getTime())
-                waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
-                                         traci.edge.getWaitingTime('gneE86') +
-                                         traci.edge.getWaitingTime('gneE89') +
-                                         traci.edge.getWaitingTime('gneE85'))
+                waiting_time_plot.append(cal_waiting_time_average())
             for j in range(action_time[1]):
                 traci.trafficlight.setPhase(idLightControl, 2)
                 # waiting_time += cal_waiting_time()
                 traci.simulationStep()
                 time_plot.append(traci.simulation.getTime())
-                waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
-                                         traci.edge.getWaitingTime('gneE86') +
-                                         traci.edge.getWaitingTime('gneE89') +
-                                         traci.edge.getWaitingTime('gneE85'))
+                waiting_time_plot.append(cal_waiting_time_average())
             yellow_time2 = sumo_int.cal_yellow_phase(['gneE86', 'gneE85'], a_dec)
             for j in range(yellow_time2):
                 traci.trafficlight.setPhase(idLightControl, 3)
                 # waiting_time += cal_waiting_time()
                 traci.simulationStep()
                 time_plot.append(traci.simulation.getTime())
-                waiting_time_plot.append(traci.edge.getWaitingTime('gneE21') +
-                                         traci.edge.getWaitingTime('gneE86') +
-                                         traci.edge.getWaitingTime('gneE89') +
-                                         traci.edge.getWaitingTime('gneE85'))
+                waiting_time_plot.append(cal_waiting_time_average())
             #  ============================================================ Finish action ======================:
 
             # calculate REWARD
@@ -153,10 +148,11 @@ def main():
             # reassign
             state = new_state
             numb_of_cycle+=1
+            waiting_time_average = cal_waiting_time_average()
             print('action - ' + '(' + str(action_time[0]) + ',' + str(
                 yellow_time1) + ',' + str(action_time[1]) + ',' + str(yellow_time2) + ')')
             log.write('action - ' + str(numb_of_cycle) + ', total waiting time - ' +
-                      str(waiting_time) + ', action - ' + '(' + str(action_time[0]) + ',' + str(
+                      str(waiting_time_average) + ', action - ' + '(' + str(action_time[0]) + ',' + str(
                 yellow_time1) + ',' + str(action_time[1]) + ',' + str(yellow_time2) + ')' + ', reward - ' + str(
                 reward_t) + '\n')
 
