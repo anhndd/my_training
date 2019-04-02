@@ -143,7 +143,7 @@ def main():
             waiting_time += cal_waiting_time()
             waiting_time_t1 = waiting_time
             reward_t = waiting_time_t - waiting_time_t1
-            reward_t_plot.append(reward_t);
+            reward_t_plot.append(reward_t)
             time_reward_t_plot.append(traci.simulation.getTime())
             waiting_time_t = waiting_time_t1
 

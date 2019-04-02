@@ -51,10 +51,9 @@ class DQNAgent:
         self.max_len_replay_memory = M
         self.replay_memory = deque(maxlen=M)
 
-        self.log = open('Logs_result/log-loss.txt', 'a')
-        self.i = 0
-        self.min_loss = 3000000
-        self.min_loss_step = 0
+        # log loss plot
+        self.loss_plot = []
+        self.step_plot = []
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
@@ -216,13 +215,11 @@ class DQNAgent:
                 self.model.fit(s, target_f, epochs=1, verbose=0,batch_size=self.minibatch_size)
 
         J = J/self.minibatch_size
-        self.i+=1
-        if(self.min_loss > J):
-            self.min_loss = J
-            self.min_loss_step = self.i
-        self.min_loss = min(self.min_loss,J)
-        print ('------------------------- loss ' , J , '-----------------------------------------------------------------------------')
-        self.log.write('loss ' + str(J) + ' - step ' + str(self.i) + ' - min_loss ' + str(self.min_loss) + ' - min_loss_step ' + str(self.min_loss_step) + '\n')
+
+        self.loss_plot.append(J)
+        self.step_plot.append(self.step)
+        np.save('array_plot/array_loss.npy', self.loss_plot)
+        np.save('array_plot/array_step.npy', self.step_plot)
 
         # TODO: is it updating Target_NEtwork?
         self.targetDQN.replay(self.model.get_weights())
