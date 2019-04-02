@@ -134,7 +134,6 @@ def main():
             state = new_state
             numb_of_cycle += 1
             agent.step += 1
-
             print ('-------------------------step - ',numb_of_cycle, numb_of_cycle/300,'% - ', action_time, ' --------------------')
             
             if agent.progress == 'Training':

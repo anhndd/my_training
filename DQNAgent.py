@@ -29,7 +29,7 @@ class DQNAgent:
         self.start_epsilon = 1
         self.end_epsilon = 0.01
         self.step_epsilon = 10000
-        self.epsilon_decay = (self.start_epsilon - self.end_epsilon) / self.step_epsilon
+        self.epsilon_decay = (self.start_epsilon - self.end_epsilon) / self.Num_Training
         self.tp = 2000          # pre-training steps
         self.alpha = 0.0001     # target network update rate
         self.gamma = 0.99       # discount factor
@@ -114,11 +114,14 @@ class DQNAgent:
     # select action random || by model.
     def select_action(self,state, tentative_act_dec):
         # print tentative_act_dec, tentative_act_dec[0], 'max = ',np.argmax(tentative_act_dec[0])
+        print ('self.start_epsilon: ', self.start_epsilon)
         if (tentative_act_dec[0][1] == 0):
             return np.argmax(tentative_act_dec[0])
         if np.random.rand() <= self.start_epsilon:
+            print('action by random')
             return random.randrange(self.action_size)
         else:
+            print('action by model')
             act_values = self.model.predict(state)
             return np.argmax(act_values[0])  # returns action
     
