@@ -149,7 +149,7 @@ def main():
                 # step 4: update epsilon:
                 agent.start_epsilon -= agent.epsilon_decay
 
-        agent.save('Models/reinf_traf_control_v14_PER.h5')
+        agent.save('Models/reinf_traf_control_v12_PER.h5')
         traci.close(wait=False)
 
 if __name__ == '__main__':
