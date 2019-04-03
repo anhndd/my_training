@@ -180,9 +180,9 @@ class DQNAgent:
 		# if current_step <= num_exploration
         if self.step <= self.Num_Exploration:
             progress = 'Exploring'
-        elif self.step <= self.Num_Exploration + self.Num_Training:
+        elif self.step <= (self.Num_Exploration + self.Num_Training):
             progress = 'Training'
-        elif self.step <= self.Num_Exploration + self.Num_Training + self.Num_Testing:
+        elif self.step <= (self.Num_Exploration + self.Num_Training + self.Num_Testing):
             progress = 'Testing'
         else:
             progress = 'Finished'

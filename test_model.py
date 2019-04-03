@@ -27,6 +27,7 @@ def cal_waiting_time():
 def cal_waiting_time_average():
     number_vehicle = (traci.edge.getLastStepVehicleNumber('gneE21')+traci.edge.getLastStepVehicleNumber('gneE86')
       +traci.edge.getLastStepVehicleNumber('gneE89')+traci.edge.getLastStepVehicleNumber('gneE85'))
+
     if number_vehicle == 0:
         return 0
     return (traci.edge.getWaitingTime('gneE21') + traci.edge.getWaitingTime('gneE86') + traci.edge.getWaitingTime(
@@ -61,7 +62,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v14_PER.h5')
+        agent.load('Models/reinf_traf_control_v12_PER.h5')
     except:
         print('No models found')
     agent.start_epsilon = 0
