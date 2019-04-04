@@ -4,23 +4,21 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-def f(t):
-    s1 = np.cos(2 * np.pi * t)
-    e1 = np.exp(-t)
-    return s1 * e1
-
 def main():
     key = '_10000'
     x = np.load('array_plot/array_time_fix'+key+'.npy')
     y = np.load('array_plot/array_waiting_time_fix'+key+'.npy')
 
+    x5 = np.load('array_plot/array_time_fix'+key+'_40'+'.npy')
+    y5 = np.load('array_plot/array_waiting_time_fix'+key+'_40'+'.npy')
+
     x2 = np.load('array_plot/array_time'+key+'.npy')
     y2 = np.load('array_plot/array_waiting_time'+key+'.npy')
 
     fig, axs = plt.subplots(2, 1, tight_layout=True)
-    axs[0].plot(x,y, label="fix time")
+    axs[0].plot(x,y, label="fix time 33")
     axs[0].plot(x2, y2, label="DQN model")
+    axs[0].plot(x5, y5, label="fix time 40")
     axs[0].set_title('Average Waiting Time')
     axs[0].set_xlabel('time (s)')
     axs[0].set_ylabel('waiting time (s)')
@@ -29,12 +27,16 @@ def main():
     x3 = np.load('array_plot/time_reward_t_plot_fix'+key+'.npy')
     y3 = np.load('array_plot/reward_t_plot_fix'+key+'.npy')
 
+    x6 = np.load('array_plot/time_reward_t_plot_fix' + key+'_40' + '.npy')
+    y6 = np.load('array_plot/reward_t_plot_fix' + key+'_40' + '.npy')
+
     x4 = np.load('array_plot/time_reward_t_plot'+key+'.npy')
     y4 = np.load('array_plot/reward_t_plot'+key+'.npy')
 
 
-    axs[1].plot(x3,y3, label="fix time")
+    axs[1].plot(x3,y3, label="fix time 33")
     axs[1].plot(x4, y4, label="DQN model")
+    axs[1].plot(x6, y6, label="fix time 40")
     axs[1].set_xlabel('time (s)')
     axs[1].set_title('Reward')
     axs[1].set_ylabel('reward')

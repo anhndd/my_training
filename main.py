@@ -145,6 +145,7 @@ def main():
 
                 # step 3: train.
                 agent.replay(minibatch, w_batch, batch_index)
+                # agent.replay_random_sample()
 
                 # step 4: update epsilon:
                 agent.start_epsilon -= agent.epsilon_decay

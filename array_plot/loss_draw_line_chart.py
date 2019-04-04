@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def main():
-    key = '_10000'
     x = np.load('array_plot/array_step.npy')
     y = np.load('array_plot/array_loss.npy')
 

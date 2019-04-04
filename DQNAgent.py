@@ -29,7 +29,7 @@ class DQNAgent:
         self.start_epsilon = 1
         self.end_epsilon = 0.01
         self.step_epsilon = 10000
-        self.epsilon_decay = (self.start_epsilon - self.end_epsilon) / self.Num_Training
+        self.epsilon_decay = (self.start_epsilon - self.end_epsilon) / self.step_epsilon
         self.tp = 2000          # pre-training steps
         self.alpha = 0.0001     # target network update rate
         self.gamma = 0.99       # discount factor
@@ -180,7 +180,7 @@ class DQNAgent:
 		# if current_step <= num_exploration
         if self.step <= self.Num_Exploration:
             progress = 'Exploring'
-        elif self.step <= (self.Num_Exploration + self.Num_Training):
+        elif self.step > self.Num_Exploration:
             progress = 'Training'
         elif self.step <= (self.Num_Exploration + self.Num_Training + self.Num_Testing):
             progress = 'Testing'
@@ -225,7 +225,7 @@ class DQNAgent:
         self.targetDQN.replay(self.model.get_weights())
 
         # TODO: TD_error_batch?  Ok
-        
+
         # TODO: Update TD_list.
         for i_batch in range(len(batch_index)):
             self.TD_list[batch_index[i_batch]] = pow((abs(TD_error_batch[i_batch]) + self.eps), self.alpha_per)
@@ -238,3 +238,38 @@ class DQNAgent:
 
     def save(self, name):
         self.model.save_weights(name)
+
+    def remember(self, state, action, reward, next_state, done):
+        self.replay_memory.append((state, action, reward, next_state, done))
+
+    def replay_random_sample(self):
+        # DucAnh implementation (no PER)
+        minibatch = random.sample(self.replay_memory, self.minibatch_size)
+
+        J = 0
+        TD_error_batch = []
+
+        for s, a, r, next_s, done in minibatch:
+            if not done:
+                Q_value_comma = self.model.predict(next_s)[0]  # Q-value(s') -- PrimaryModel
+                a_comma = np.argmax(Q_value_comma)  # pick a' cause maxQ-value(s')
+                Q_target = r + self.gamma * self.targetDQN.model.predict(next_s)[0][a_comma]  # a number
+                target_f = self.model.predict(s)  # Q value Q(s,a,theta)
+                Q_value = target_f[0][a]
+
+                # PER: append TD_Error:
+                TD_error_batch.append(Q_target - Q_value)
+
+                # calculate loss for log
+                TD_error = (Q_target - Q_value) * (Q_target - Q_value)
+                J += TD_error
+
+                target_f[0][a] = Q_target
+                self.model.fit(s, target_f, epochs=1, verbose=0, batch_size=self.minibatch_size)
+
+        J = J / self.minibatch_size
+
+        self.loss_plot.append(J)
+        self.step_plot.append(self.step)
+        np.save('array_plot/array_loss_random_sample.npy', self.loss_plot)
+        np.save('array_plot/array_step_random_sample.npy', self.step_plot)
