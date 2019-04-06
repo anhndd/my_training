@@ -45,7 +45,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v12_PER.h5')
+        agent.load('Models/reinf_traf_control_v13_random_sample.h5')
     except:
         print('No models found')
     # agent.start_epsilon = 0
@@ -125,10 +125,10 @@ def main():
 
 
             # Case 1: Experience Replay (store tuple) + store TD_error
-            agent.store_tuple(state, action, reward_t, new_state, False)
+            # agent.store_tuple(state, action, reward_t, new_state, False)
             
             # Case 2: stored EXP/Tuple
-            # agent.remember(state, action, reward_t, new_state, False)
+            agent.remember(state, action, reward_t, new_state, False)
 
             # reassign
             state = new_state
@@ -141,16 +141,16 @@ def main():
 				# ......... thinking ....................
 
 				# step 2: get mini_batch?
-                minibatch, w_batch, batch_index  = agent.get_prioritized_minibatch()
+                # minibatch, w_batch, batch_index  = agent.get_prioritized_minibatch()
 
                 # step 3: train.
-                agent.replay(minibatch, w_batch, batch_index)
-                # agent.replay_random_sample()
+                # agent.replay(minibatch, w_batch, batch_index)
+                agent.replay_random_sample()
 
                 # step 4: update epsilon:
                 agent.start_epsilon -= agent.epsilon_decay
 
-        agent.save('Models/reinf_traf_control_v12_PER.h5')
+        agent.save('Models/reinf_traf_control_v13_random_sample.h5')
         traci.close(wait=False)
 
 if __name__ == '__main__':
