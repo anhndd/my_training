@@ -1,8 +1,8 @@
 import sys
 import os
 import numpy as np
-import time
-from scipy.spatial.ckdtree import coo_entries
+import matplotlib
+import matplotlib.pyplot as plt
 import constants
 
 # split file
@@ -20,11 +20,45 @@ import traci
 sumoBinary = "/usr/bin/sumo"
 sumoConfig = "sumoconfig.sumoconfig"
 
+# set up matplotlib
+is_ipython = 'inline' in matplotlib.get_backend()
+if is_ipython:
+    from IPython import display
+
+plt.ion()
+
+def plot_durations(total_reward):
+    plt.figure(2)
+    plt.clf()
+    plt.title('Training...')
+    plt.xlabel('Episode')
+    plt.ylabel('Duration')
+    # plt.plot(episode_durations)
+    # Take 100 episode averages and plot them too
+    plt.plot(total_reward)
+
+    plt.pause(0.001)  # pause a bit so that plots are updated
+    if is_ipython:
+        display.clear_output(wait=True)
+        display.display(plt.gcf())
+
+def cal_waiting_time_average():
+    number_vehicle = (traci.edge.getLastStepVehicleNumber('gneE21')+traci.edge.getLastStepVehicleNumber('gneE86')
+      +traci.edge.getLastStepVehicleNumber('gneE89')+traci.edge.getLastStepVehicleNumber('gneE85'))
+
+    if number_vehicle == 0:
+        return 0
+    return (traci.edge.getWaitingTime('gneE21') + traci.edge.getWaitingTime('gneE86') + traci.edge.getWaitingTime(
+        'gneE89') + traci.edge.getWaitingTime('gneE85')) / number_vehicle  # waiting_time
+
 def cal_waiting_time():
-    return (traci.edge.getWaitingTime('gneE21') + traci.edge.getWaitingTime('gneE86') + traci.edge.getWaitingTime('gneE89') + traci.edge.getWaitingTime('gneE85')) # waiting_time
+    return (traci.edge.getWaitingTime('gneE21') + traci.edge.getWaitingTime('gneE86') + traci.edge.getWaitingTime('gneE89')
+            + traci.edge.getWaitingTime('gneE85')) # waiting_time
 
 def main():
-
+    # reward every episode
+    episode_durations = []
+    total_reward = []
     # Control code here
     memory_size = constants.memory_size                   # size memory
     mini_batch_size = constants.mini_batch_size           # minibatch_size
@@ -60,6 +94,7 @@ def main():
     
     # run 2000 episodes
     for e in range(episodes):
+        waiting_time_plot = []
         # start sumo simulation.
         traci.start(sumo_cmd)
 
@@ -76,7 +111,7 @@ def main():
             break
         
         # run a cycle.
-        while traci.simulation.getMinExpectedNumber() > 0:
+        while (traci.simulation.getMinExpectedNumber() > 0):
             
             # run a step on SUMO (~ 1 second).
             traci.simulationStep()
@@ -96,22 +131,22 @@ def main():
                     action_time[j] = 60
             for j in range(action_time[0]):
                 traci.trafficlight.setPhase(idLightControl, 0)
-                # waiting_time += cal_waiting_time()
                 traci.simulationStep()
+                waiting_time_plot.append(cal_waiting_time_average())
             yellow_time1 = sumo_int.cal_yellow_phase(['gneE21', 'gneE89'], a_dec)
             for j in range(yellow_time1):
                 traci.trafficlight.setPhase(idLightControl, 1)
-                # waiting_time += cal_waiting_time()
                 traci.simulationStep()
+                waiting_time_plot.append(cal_waiting_time_average())
             for j in range(action_time[1]):
                 traci.trafficlight.setPhase(idLightControl, 2)
-                # waiting_time += cal_waiting_time()
                 traci.simulationStep()
+                waiting_time_plot.append(cal_waiting_time_average())
             yellow_time2 = sumo_int.cal_yellow_phase(['gneE86', 'gneE85'], a_dec)
             for j in range(yellow_time2):
                 traci.trafficlight.setPhase(idLightControl, 3)
-                # waiting_time += cal_waiting_time()
                 traci.simulationStep()
+                waiting_time_plot.append(cal_waiting_time_average())
             #  ============================================================ Finish action ======================:
 
             # calculate REWARD
@@ -150,8 +185,19 @@ def main():
                 # step 4: update epsilon:
                 agent.start_epsilon -= agent.epsilon_decay
 
+        mean = 0
+        for i in range(len(waiting_time_plot)):
+            mean+=waiting_time_plot[i]
+        if mean != 0:
+            mean /= len(waiting_time_plot)
+        episode_durations.append(e + 1)
+        total_reward.append(-mean)
+        plot_durations(total_reward)
         agent.save('Models/reinf_traf_control_v13_random_sample.h5')
         traci.close(wait=False)
+
+    plt.ioff()
+    plt.show()
 
 if __name__ == '__main__':
     main()
