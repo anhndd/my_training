@@ -62,7 +62,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v12_PER.h5')
+        agent.load('Models/reinf_traf_control_v13_random_sample.h5')
     except:
         print('No models found')
     agent.start_epsilon = 0
@@ -95,6 +95,7 @@ def main():
 
         # run a cycle.
         while traci.simulation.getMinExpectedNumber() > 0:
+            traci.simulationStep()
             waiting_time = 0
 
             # get action.

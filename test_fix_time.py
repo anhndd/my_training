@@ -48,7 +48,8 @@ def main():
     action_space = phase_number * 2 + 1
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
     I = np.full((action_space, action_space), 0.5).reshape(1, action_space, action_space)
-    action_time = [40, 40]
+    time_test = 40
+    action_time = [time_test, time_test]
     idLightControl = '4628048104'
     waiting_time_t = 0
     waiting_time_t1 = 0
@@ -113,7 +114,7 @@ def main():
         # print '\n--------------------------------------------------- ',waiting_time, 'in step ', i, ' ---------------------------------------------------\n'
     log.close()
     traci.close()
-    key = '_10000_40'
+    key = '_10000_' + str(time_test)
     np.save('array_plot/array_time_fix'+key+'.npy', time_plot)
     np.save('array_plot/array_waiting_time_fix'+key+'.npy', waiting_time_plot)
 
