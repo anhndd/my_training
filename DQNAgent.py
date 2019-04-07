@@ -116,7 +116,7 @@ class DQNAgent:
         print ('self.start_epsilon: ', self.start_epsilon)
         # if (tentative_act_dec[0][1] == 0):
         #     return np.argmax(tentative_act_dec[0])
-        if np.random.rand() > self.start_epsilon:
+        if np.random.rand() <= self.start_epsilon:
             print('action by random')
             return random.randrange(self.action_size)
         else:
