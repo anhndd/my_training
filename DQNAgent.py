@@ -119,7 +119,7 @@ class DQNAgent:
         if np.random.rand() <= self.start_epsilon:
             print('action by random')
             choices = np.where(tentative_act_dec[0] == 1)[0]
-            print tentative_act_dec[0], choices, random.choice(choices)
+            # print tentative_act_dec[0], choices, random.choice(choices)
             return random.choice(choices)
         else:
             print('action by model')
