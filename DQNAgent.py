@@ -118,7 +118,9 @@ class DQNAgent:
         #     return np.argmax(tentative_act_dec[0])
         if np.random.rand() <= self.start_epsilon:
             print('action by random')
-            return random.randrange(self.action_size)
+            choices = np.where(tentative_act_dec[0] == 1)[0]
+            print tentative_act_dec[0], choices, random.choice(choices)
+            return random.choice(choices)
         else:
             print('action by model')
             act_values = self.model.predict(state)
@@ -126,7 +128,7 @@ class DQNAgent:
             output[output == 0] = -10000
             # print act_values, tentative_act_dec, output, max(output), np.argmax(output)
             if (max(output) == -10000):
-                choices = [tentative_act_dec[0][x] for x in tentative_act_dec[0] if x == 1]
+                choices = np.where(tentative_act_dec[0] == 1)[0]
                 return random.choice(choices)
             else:
                 return np.argmax(output)
