@@ -57,7 +57,6 @@ def cal_waiting_time():
 
 def main():
     # reward every episode
-    episode_durations = []
     total_reward = []
     # Control code here
     memory_size = constants.memory_size                   # size memory
@@ -79,7 +78,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v13_random_sample.h5')
+        agent.load('Models/reinf_traf_control_v14_loss_real_time.h5')
     except:
         print('No models found')
     # agent.start_epsilon = 0
@@ -185,15 +184,9 @@ def main():
                 # step 4: update epsilon:
                 agent.start_epsilon -= agent.epsilon_decay
 
-        mean = 0
-        for i in range(len(waiting_time_plot)):
-            mean+=waiting_time_plot[i]
-        if mean != 0:
-            mean /= len(waiting_time_plot)
-        episode_durations.append(e + 1)
-        total_reward.append(-mean)
+        total_reward.append(-np.mean(waiting_time_plot))
         plot_durations(total_reward)
-        agent.save('Models/reinf_traf_control_v13_random_sample.h5')
+        agent.save('Models/reinf_traf_control_v14_loss_real_time.h5')
         traci.close(wait=False)
 
     plt.ioff()
