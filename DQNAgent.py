@@ -112,17 +112,24 @@ class DQNAgent:
 
     # select action random || by model.
     def select_action(self,state, tentative_act_dec):
-        # print tentative_act_dec, tentative_act_dec[0], 'max = ',np.argmax(tentative_act_dec[0])
+
         print ('self.start_epsilon: ', self.start_epsilon)
-        if (tentative_act_dec[0][1] == 0):
-            return np.argmax(tentative_act_dec[0])
-        if np.random.rand() <= self.start_epsilon:
+        # if (tentative_act_dec[0][1] == 0):
+        #     return np.argmax(tentative_act_dec[0])
+        if np.random.rand() > self.start_epsilon:
             print('action by random')
             return random.randrange(self.action_size)
         else:
             print('action by model')
             act_values = self.model.predict(state)
-            return np.argmax(act_values[0])  # returns action
+            output = np.multiply(act_values, tentative_act_dec)[0]
+            output[output == 0] = -10000
+            # print act_values, tentative_act_dec, output, max(output), np.argmax(output)
+            if (max(output) == -10000):
+                choices = [tentative_act_dec[0][x] for x in tentative_act_dec[0] if x == 1]
+                return random.choice(choices)
+            else:
+                return np.argmax(output)
     
     # TODO: verify this function
     # get minibatch

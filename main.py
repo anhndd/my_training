@@ -65,10 +65,10 @@ def main():
     num_of_phase = constants.num_of_phase                 # 2 phase
     action_space_size = num_of_phase * 2 + 1                # 5 actions
     action_policy = constants.action_policy
-    tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space_size),np.asarray([1,0,0,0,0]).reshape(1, action_space_size),
-                        np.asarray([1,0,0,0,0]).reshape(1, action_space_size),np.asarray([1,0,0,0,0]).reshape(1, action_space_size),
-                        np.asarray([1,0,0,0,0]).reshape(1, action_space_size)]
-    
+    tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space_size),np.asarray([1,1,0,0,0]).reshape(1, action_space_size),
+                        np.asarray([1,0,1,0,0]).reshape(1, action_space_size),np.asarray([1,0,0,1,0]).reshape(1, action_space_size),
+                        np.asarray([1,0,0,0,1]).reshape(1, action_space_size)]
+
     # global count_action_dif_default
     I = np.full((action_space_size, action_space_size), 0.5).reshape(1, action_space_size, action_space_size)
     idLightControl = constants.idLightControl
