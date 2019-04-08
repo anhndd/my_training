@@ -119,7 +119,7 @@ def main():
 
             # Get progress?
             agent.progress = agent.get_progress()
-            action = agent.select_action(state, tentative_act_dec)
+            action = agent.select_action_v2(state, tentative_act_dec)
 
             #  ============================================================ Perform action ======================
             for j in range(num_of_phase):
