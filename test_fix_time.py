@@ -36,19 +36,24 @@ def cal_waiting_time_average():
     return (traci.edge.getWaitingTime('gneE21') + traci.edge.getWaitingTime('gneE86') + traci.edge.getWaitingTime(
         'gneE89') + traci.edge.getWaitingTime('gneE85')) / number_vehicle  # waiting_time
 
+def cal_waiting_time_v2():
+    return (traci.edge.getLastStepHaltingNumber('gneE21')
+            + traci.edge.getLastStepHaltingNumber('gneE86')
+            + traci.edge.getLastStepHaltingNumber('gneE89')
+            + traci.edge.getLastStepHaltingNumber('gneE85'))
 def main():
     # Control code here
     log = open('Logs_result/log_fix_time.txt', 'w')
+    total_reward = 0
     time_plot = []
     waiting_time_plot = []
-    reward_t_plot = []
-    time_reward_t_plot = []
+    total_reward_plot = []
     a_dec = 4.5 # m/s^2
     phase_number = 2
     action_space = phase_number * 2 + 1
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
     I = np.full((action_space, action_space), 0.5).reshape(1, action_space, action_space)
-    time_test = 40
+    time_test = 33
     action_time = [time_test, time_test]
     idLightControl = '4628048104'
     waiting_time_t = 0
@@ -62,15 +67,15 @@ def main():
 
     sumo_cmd = [sumoBinary, "-c", sumoConfig,'--start']
     traci.start(sumo_cmd)
-
+    waiting_time = 0
     while (traci.simulation.getMinExpectedNumber() > 0) & (traci.simulation.getTime() < 10000):
         traci.simulationStep()
-        waiting_time = 0
 
         # print action_time[0]
         for j in range(action_time[0]):
             traci.trafficlight.setPhase(idLightControl, 0)
             traci.simulationStep()
+            waiting_time += cal_waiting_time_v2()
             time_plot.append(traci.simulation.getTime())
             waiting_time_plot.append(cal_waiting_time_average())
 
@@ -79,6 +84,7 @@ def main():
         for j in range(yellow_time1):
             traci.trafficlight.setPhase(idLightControl, 1)
             traci.simulationStep()
+            waiting_time += cal_waiting_time_v2()
             time_plot.append(traci.simulation.getTime())
             waiting_time_plot.append(cal_waiting_time_average())
 
@@ -86,6 +92,7 @@ def main():
         for j in range(action_time[1]):
             traci.trafficlight.setPhase(idLightControl, 2)
             traci.simulationStep()
+            waiting_time += cal_waiting_time_v2()
             time_plot.append(traci.simulation.getTime())
             waiting_time_plot.append(cal_waiting_time_average())
 
@@ -94,14 +101,14 @@ def main():
         for j in range(yellow_time2):
             traci.trafficlight.setPhase(idLightControl, 3)
             traci.simulationStep()
+            waiting_time += cal_waiting_time_v2()
             time_plot.append(traci.simulation.getTime())
             waiting_time_plot.append(cal_waiting_time_average())
 
-        waiting_time += cal_waiting_time()
         waiting_time_t1 = waiting_time
         reward_t = waiting_time_t - waiting_time_t1
-        reward_t_plot.append(reward_t)
-        time_reward_t_plot.append(traci.simulation.getTime())
+        total_reward += reward_t
+
         waiting_time_t = waiting_time_t1
 
         # new_state = sumo_int.getState(I)
@@ -109,17 +116,18 @@ def main():
 
         i += 1;
         waiting_time_average = cal_waiting_time_average()
-        log.write('action - ' + str(i) + ', total waiting time - ' +
-                 str(waiting_time_average)  + ', action - ' +'('+str(action_time[0])+','+str(yellow_time1)+','+str(action_time[1])+','+str(yellow_time2)+')'+ ', reward - ' + str(reward_t) +'\n')
+        log.write('action - ' + str(i) + ', average waiting time - ' +
+                 str(waiting_time_average)  + ', action - ' +'('+str(action_time[0])+','+str(yellow_time1)+','+str(action_time[1])+','+str(yellow_time2)+')'+ ', total reward - ' + str(total_reward) +'\n')
         # print '\n--------------------------------------------------- ',waiting_time, 'in step ', i, ' ---------------------------------------------------\n'
     log.close()
     traci.close()
     key = '_10000_' + str(time_test)
+
+    total_reward_plot.append(total_reward)
+    np.save('array_plot/array_total_reward_fix' + key + '.npy', total_reward_plot)
+
     np.save('array_plot/array_time_fix'+key+'.npy', time_plot)
     np.save('array_plot/array_waiting_time_fix'+key+'.npy', waiting_time_plot)
-
-    np.save('array_plot/reward_t_plot_fix'+key+'.npy', reward_t_plot)
-    np.save('array_plot/time_reward_t_plot_fix'+key+'.npy', time_reward_t_plot)
 
 if __name__ == '__main__':
     main()
