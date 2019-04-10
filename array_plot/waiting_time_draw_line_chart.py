@@ -21,8 +21,8 @@ def main():
     axs.set_ylabel('waiting time (s)')
     axs.legend(loc='best')
 
-    print np.mean(y), np.mean(y2), (np.mean(y) - np.mean(y2)) / np.mean(y)
-    print np.mean(y5),np.mean(y2),(np.mean(y5)-np.mean(y2))/np.mean(y5)
+    print sum(y), sum(y2), (sum(y) - sum(y2)) / sum(y)
+    print sum(y5),sum(y2),(sum(y5)-sum(y2))/sum(y5)
 
     # fig, axs = plt.subplots(2, 1, tight_layout=True)
     # axs[0].plot(x,y, label="fix time 33")

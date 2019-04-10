@@ -67,8 +67,11 @@ def cal_waiting_time_v2():
 
 def main():
     # reward every episode
+    waiting_time_plot = []
     total_reward_plot = []
     episode_plot = []
+    E_reward = np.load('array_plot/array_total_reward_fix_10000_40.npy')[0]
+    print 'E_reward: ', E_reward
     # Control code here
     memory_size = constants.memory_size  # size memory
     mini_batch_size = constants.mini_batch_size  # minibatch_size
@@ -90,7 +93,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v16_reward_v2.h5')
+        agent.load('Models/reinf_traf_control_v17_reward_v2.1.h5')
     except:
         print('No models found')
     # agent.start_epsilon = 0
@@ -108,6 +111,7 @@ def main():
         waiting_time_t = 0
         waiting_time = 0  # waiting time v2
         total_reward = 0
+        waiting_time_average = []
         # start sumo simulation.
         traci.start(sumo_cmd)
 
@@ -128,7 +132,7 @@ def main():
 
             # run a step on SUMO (~ 1 second).
             traci.simulationStep()
-
+            waiting_time += cal_waiting_time_v2()
             # waiting_time = 0 # waiting time v1
 
             # Get progress?
@@ -147,20 +151,24 @@ def main():
                 traci.trafficlight.setPhase(idLightControl, 0)
                 traci.simulationStep()
                 waiting_time += cal_waiting_time_v2()
+                waiting_time_average.append(cal_waiting_time_average())
             yellow_time1 = sumo_int.cal_yellow_phase(['gneE21', 'gneE89'], a_dec)
             for j in range(yellow_time1):
                 traci.trafficlight.setPhase(idLightControl, 1)
                 traci.simulationStep()
                 waiting_time += cal_waiting_time_v2()
+                waiting_time_average.append(cal_waiting_time_average())
             for j in range(action_time[1]):
                 traci.trafficlight.setPhase(idLightControl, 2)
                 traci.simulationStep()
                 waiting_time += cal_waiting_time_v2()
+                waiting_time_average.append(cal_waiting_time_average())
             yellow_time2 = sumo_int.cal_yellow_phase(['gneE86', 'gneE85'], a_dec)
             for j in range(yellow_time2):
                 traci.trafficlight.setPhase(idLightControl, 3)
                 traci.simulationStep()
                 waiting_time += cal_waiting_time_v2()
+                waiting_time_average.append(cal_waiting_time_average())
             #  ============================================================ Finish action ======================:
 
             # calculate REWARD
@@ -199,12 +207,18 @@ def main():
                 agent.start_epsilon -= agent.epsilon_decay
 
         print('episode - ' + str(e) + ' total waiting time - ' + str(waiting_time))
+        if(E_reward < total_reward):
+            E_reward = total_reward
+            agent.save('Models/reinf_traf_control_v17_reward_v2.1.h5')
+
+        waiting_time_plot.append(np.mean(waiting_time_average))
         total_reward_plot.append(total_reward)
         episode_plot.append(e)
+        np.save('array_plot/array_waiting_time_average.npy', waiting_time_plot)
         np.save('array_plot/array_total_reward.npy', total_reward_plot)
         np.save('array_plot/array_episode.npy', episode_plot)
         plot_durations(total_reward_plot)
-        agent.save('Models/reinf_traf_control_v16_reward_v2.h5')
+
         traci.close(wait=False)
 
     plt.ioff()

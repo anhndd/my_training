@@ -47,11 +47,14 @@ def main():
     num_of_phase = 2  # 2 phase
     action_space_size = num_of_phase * 2 + 1  # 5 actions
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
-    tentative_action = [np.asarray([1, 1, 1, 1, 1]).reshape(1, action_space_size),
-                        np.asarray([1, 0, 0, 0, 0]).reshape(1, action_space_size),
-                        np.asarray([1, 0, 0, 0, 0]).reshape(1, action_space_size),
-                        np.asarray([1, 0, 0, 0, 0]).reshape(1, action_space_size),
-                        np.asarray([1, 0, 0, 0, 0]).reshape(1, action_space_size)]
+    tentative_action = [np.asarray([1,1,1,1,1]).reshape(1, action_space_size),np.asarray([1,1,0,0,0]).reshape(1, action_space_size),
+                        np.asarray([1,0,1,0,0]).reshape(1, action_space_size),np.asarray([1,0,0,1,0]).reshape(1, action_space_size),
+                        np.asarray([1,0,0,0,1]).reshape(1, action_space_size)]
+    # tentative_action = [np.asarray([1, 1, 1, 1, 1]).reshape(1, action_space_size),
+    #                     np.asarray([1, 0, 0, 0, 0]).reshape(1, action_space_size),
+    #                     np.asarray([1, 0, 0, 0, 0]).reshape(1, action_space_size),
+    #                     np.asarray([1, 0, 0, 0, 0]).reshape(1, action_space_size),
+    #                     np.asarray([1, 0, 0, 0, 0]).reshape(1, action_space_size)]
 
     # global count_action_dif_default
     I = np.full((action_space_size, action_space_size), 0.5).reshape(1, action_space_size, action_space_size)
@@ -62,7 +65,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('test/reinf_traf_control_v13_random_sample.h5')
+        agent.load('Models/reinf_traf_control_v14_loss_real_time.h5')
     except:
         print('No models found')
     agent.start_epsilon = 0
@@ -99,7 +102,7 @@ def main():
             waiting_time = 0
 
             # get action.
-            action = agent.select_action(state, tentative_act_dec)
+            action = agent.select_action_v2(state, tentative_act_dec)
 
             #  ============================================================ Perform action ======================:
             for j in range(num_of_phase):

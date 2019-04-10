@@ -16,7 +16,7 @@ def main():
 
     fig, axs = plt.subplots(1, 1, tight_layout=True)
     axs.plot(x,y, label="random sample")
-    axs.plot(x2, y2, label="priority")
+    # axs.plot(x2, y2, label="priority")
     axs.set_title('Loss')
     axs.set_xlabel('time of training (times)')
     axs.set_ylabel('loss')

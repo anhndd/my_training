@@ -124,6 +124,8 @@ def main():
     key = '_10000_' + str(time_test)
 
     total_reward_plot.append(total_reward)
+    print 'average waiting time: ' ,np.mean(waiting_time_plot), '- total reward: ',total_reward
+    np.save('array_plot/array_waiting_time_average_fix' + key + '.npy', [np.mean(waiting_time_plot)])
     np.save('array_plot/array_total_reward_fix' + key + '.npy', total_reward_plot)
 
     np.save('array_plot/array_time_fix'+key+'.npy', time_plot)
