@@ -55,9 +55,19 @@ def cal_waiting_time():
     return (traci.edge.getWaitingTime('gneE21') + traci.edge.getWaitingTime('gneE86') + traci.edge.getWaitingTime('gneE89')
             + traci.edge.getWaitingTime('gneE85')) # waiting_time
 
+def cal_waiting_time_v2():
+    return (traci.edge.getLastStepHaltingNumber('gneE21')
+            + traci.edge.getLastStepHaltingNumber('gneE86')
+            + traci.edge.getLastStepHaltingNumber('gneE89')
+            + traci.edge.getLastStepHaltingNumber('gneE85'))
+
 def main():
     # reward every episode
-    total_reward = []
+    waiting_time_plot = []
+    total_reward_plot = []
+    episode_plot = []
+    E_reward = np.load('array_plot/array_total_reward_fix_10000_40.npy')[0]
+    print 'E_reward: ', E_reward
     # Control code here
     memory_size = constants.memory_size                   # size memory
     mini_batch_size = constants.mini_batch_size           # minibatch_size
@@ -72,7 +82,7 @@ def main():
     # global count_action_dif_default
     I = np.full((action_space_size, action_space_size), 0.5).reshape(1, action_space_size, action_space_size)
     idLightControl = constants.idLightControl
-    waiting_time_t = 0
+
     numb_of_cycle = 0
 
     # new Agent.
@@ -93,7 +103,9 @@ def main():
     
     # run 2000 episodes
     for e in range(episodes):
-        waiting_time_plot = []
+        waiting_time_t = 0
+        total_reward = 0
+        waiting_time_average = []
         # start sumo simulation.
         traci.start(sumo_cmd)
 
@@ -105,10 +117,6 @@ def main():
 
         state, tentative_act_dec = sumo_int.getState(I, action, tentative_action)
 
-        # break traning and save model.
-        if numb_of_cycle > 30000:
-            break
-        
         # run a cycle.
         while (traci.simulation.getMinExpectedNumber() > 0):
             
@@ -131,21 +139,25 @@ def main():
             for j in range(action_time[0]):
                 traci.trafficlight.setPhase(idLightControl, 0)
                 traci.simulationStep()
-                waiting_time_plot.append(cal_waiting_time_average())
+                waiting_time_average.append(cal_waiting_time_average())
+                total_reward -= cal_waiting_time_v2()
             yellow_time1 = sumo_int.cal_yellow_phase(['gneE21', 'gneE89'], a_dec)
             for j in range(yellow_time1):
                 traci.trafficlight.setPhase(idLightControl, 1)
                 traci.simulationStep()
-                waiting_time_plot.append(cal_waiting_time_average())
+                waiting_time_average.append(cal_waiting_time_average())
+                total_reward -= cal_waiting_time_v2()
             for j in range(action_time[1]):
                 traci.trafficlight.setPhase(idLightControl, 2)
                 traci.simulationStep()
-                waiting_time_plot.append(cal_waiting_time_average())
+                waiting_time_average.append(cal_waiting_time_average())
+                total_reward -= cal_waiting_time_v2()
             yellow_time2 = sumo_int.cal_yellow_phase(['gneE86', 'gneE85'], a_dec)
             for j in range(yellow_time2):
                 traci.trafficlight.setPhase(idLightControl, 3)
                 traci.simulationStep()
-                waiting_time_plot.append(cal_waiting_time_average())
+                waiting_time_average.append(cal_waiting_time_average())
+                total_reward -= cal_waiting_time_v2()
             #  ============================================================ Finish action ======================:
 
             # calculate REWARD
@@ -168,7 +180,7 @@ def main():
             state = new_state
             numb_of_cycle += 1
             agent.step += 1
-            print ('-------------------------step - ',numb_of_cycle, numb_of_cycle/300,'% - ', action_time, ' --------------------')
+            print ('------------------------- step: ',numb_of_cycle, ' - total_reward: ' ,total_reward,' - action time:', action_time, ' --------------------')
             
             if agent.progress == 'Training':
 				# step 1: if agent.step % 100 == 0 then update weights of target_network.
@@ -184,10 +196,20 @@ def main():
                 # step 4: update epsilon:
                 agent.start_epsilon -= agent.epsilon_decay
 
-        total_reward.append(-np.mean(waiting_time_plot))
-        plot_durations(total_reward)
         agent.save('Models/reinf_traf_control_v14_loss_real_time.h5')
         traci.close(wait=False)
+
+        if(E_reward < total_reward):
+            E_reward = total_reward
+            agent.save('Models/reinf_traf_control_v17_reward_v2.h5')
+
+        waiting_time_plot.append(np.mean(waiting_time_average))
+        total_reward_plot.append(total_reward)
+        episode_plot.append(e)
+        np.save('array_plot/array_waiting_time_average.npy', waiting_time_plot)
+        np.save('array_plot/array_total_reward.npy', total_reward_plot)
+        np.save('array_plot/array_episode.npy', episode_plot)
+        plot_durations(total_reward_plot)
 
     plt.ioff()
     plt.show()

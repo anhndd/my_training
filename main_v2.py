@@ -93,7 +93,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v17_reward_v2.1.h5')
+        agent.load('Models/reinf_traf_control_v17_reward_v2.h5')
     except:
         print('No models found')
     # agent.start_epsilon = 0
@@ -209,7 +209,7 @@ def main():
         print('episode - ' + str(e) + ' total waiting time - ' + str(waiting_time))
         if(E_reward < total_reward):
             E_reward = total_reward
-            agent.save('Models/reinf_traf_control_v17_reward_v2.1.h5')
+            agent.save('Models/reinf_traf_control_v17_reward_v2.h5')
 
         waiting_time_plot.append(np.mean(waiting_time_average))
         total_reward_plot.append(total_reward)
