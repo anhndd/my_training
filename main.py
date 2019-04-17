@@ -201,9 +201,10 @@ def main():
 
         if(E_reward < total_reward):
             E_reward = total_reward
-            agent.save('Models/reinf_traf_control_v17_reward_v2.h5')
+            agent.save('Models/reinf_traf_control_v17_reward_max.h5')
 
-        waiting_time_plot.append(np.mean(waiting_time_average))
+        average_waiting_time = (-total_reward) / 14870
+        waiting_time_plot.append(average_waiting_time)
         total_reward_plot.append(total_reward)
         episode_plot.append(e)
         np.save('array_plot/array_waiting_time_average.npy', waiting_time_plot)

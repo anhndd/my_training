@@ -33,9 +33,17 @@ def cal_waiting_time_average():
     return (traci.edge.getWaitingTime('gneE21') + traci.edge.getWaitingTime('gneE86') + traci.edge.getWaitingTime(
         'gneE89') + traci.edge.getWaitingTime('gneE85')) / number_vehicle  # waiting_time
 
+def cal_waiting_time_v2():
+    return (traci.edge.getLastStepHaltingNumber('gneE21')
+            + traci.edge.getLastStepHaltingNumber('gneE86')
+            + traci.edge.getLastStepHaltingNumber('gneE89')
+            + traci.edge.getLastStepHaltingNumber('gneE85'))
+
 def main():
     log = open('Logs_result/log-model.txt', 'w')
     time_plot = []
+    time_for_waiting_time_plot = []
+    average_waiting_time_plot = []
     waiting_time_plot = []
     reward_t_plot = []
     time_reward_t_plot = []
@@ -92,14 +100,11 @@ def main():
         # getState by action.
         state, tentative_act_dec = sumo_int.getState(I, action, tentative_action)
 
-        # break traning and save model.
-        if numb_of_cycle > 30000:
-            break
-
+        waiting_time = 0
         # run a cycle.
         while traci.simulation.getMinExpectedNumber() > 0:
             traci.simulationStep()
-            waiting_time = 0
+
 
             # get action.
             action = agent.select_action_v2(state, tentative_act_dec)
@@ -113,34 +118,33 @@ def main():
                     action_time[j] = 60
             for j in range(action_time[0]):
                 traci.trafficlight.setPhase(idLightControl, 0)
-                # waiting_time += cal_waiting_time()
+                waiting_time += cal_waiting_time_v2()
                 traci.simulationStep()
                 time_plot.append(traci.simulation.getTime())
-                waiting_time_plot.append(cal_waiting_time_average())
+                waiting_time_plot.append(cal_waiting_time())
             yellow_time1 = sumo_int.cal_yellow_phase(['gneE21', 'gneE89'], a_dec)
             for j in range(yellow_time1):
                 traci.trafficlight.setPhase(idLightControl, 1)
-                # waiting_time += cal_waiting_time()
+                waiting_time += cal_waiting_time_v2()
                 traci.simulationStep()
                 time_plot.append(traci.simulation.getTime())
-                waiting_time_plot.append(cal_waiting_time_average())
+                waiting_time_plot.append(cal_waiting_time())
             for j in range(action_time[1]):
                 traci.trafficlight.setPhase(idLightControl, 2)
-                # waiting_time += cal_waiting_time()
+                waiting_time += cal_waiting_time_v2()
                 traci.simulationStep()
                 time_plot.append(traci.simulation.getTime())
-                waiting_time_plot.append(cal_waiting_time_average())
+                waiting_time_plot.append(cal_waiting_time())
             yellow_time2 = sumo_int.cal_yellow_phase(['gneE86', 'gneE85'], a_dec)
             for j in range(yellow_time2):
                 traci.trafficlight.setPhase(idLightControl, 3)
-                # waiting_time += cal_waiting_time()
+                waiting_time += cal_waiting_time_v2()
                 traci.simulationStep()
                 time_plot.append(traci.simulation.getTime())
-                waiting_time_plot.append(cal_waiting_time_average())
+                waiting_time_plot.append(cal_waiting_time())
             #  ============================================================ Finish action ======================:
 
             # calculate REWARD
-            waiting_time += cal_waiting_time()
             waiting_time_t1 = waiting_time
             reward_t = waiting_time_t - waiting_time_t1
             reward_t_plot.append(reward_t)
@@ -164,6 +168,9 @@ def main():
         traci.close(wait=False)
         log.close()
         key = '_10000'
+        # time_plot # average_waiting_time_plot
+        average_waiting_time = waiting_time / 14870
+        print 'average waiting time', average_waiting_time
         np.save('array_plot/array_time'+key+'.npy', time_plot)
         np.save('array_plot/array_waiting_time'+key+'.npy', waiting_time_plot)
 

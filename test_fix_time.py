@@ -46,6 +46,7 @@ def main():
     log = open('Logs_result/log_fix_time.txt', 'w')
     total_reward = 0
     time_plot = []
+    time_for_waiting_time_plot = []
     waiting_time_plot = []
     total_reward_plot = []
     a_dec = 4.5 # m/s^2
@@ -77,7 +78,7 @@ def main():
             traci.simulationStep()
             waiting_time += cal_waiting_time_v2()
             time_plot.append(traci.simulation.getTime())
-            waiting_time_plot.append(cal_waiting_time_average())
+            waiting_time_plot.append(cal_waiting_time())
 
         yellow_time1 =  4
         # print waiting_time#yellow_time1
@@ -86,7 +87,7 @@ def main():
             traci.simulationStep()
             waiting_time += cal_waiting_time_v2()
             time_plot.append(traci.simulation.getTime())
-            waiting_time_plot.append(cal_waiting_time_average())
+            waiting_time_plot.append(cal_waiting_time())
 
         # print waiting_time#action_time[1]
         for j in range(action_time[1]):
@@ -94,7 +95,7 @@ def main():
             traci.simulationStep()
             waiting_time += cal_waiting_time_v2()
             time_plot.append(traci.simulation.getTime())
-            waiting_time_plot.append(cal_waiting_time_average())
+            waiting_time_plot.append(cal_waiting_time())
 
         yellow_time2 =  4
         # print waiting_time#yellow_time2
@@ -103,31 +104,32 @@ def main():
             traci.simulationStep()
             waiting_time += cal_waiting_time_v2()
             time_plot.append(traci.simulation.getTime())
-            waiting_time_plot.append(cal_waiting_time_average())
+            waiting_time_plot.append(cal_waiting_time())
 
         waiting_time_t1 = waiting_time
         reward_t = waiting_time_t - waiting_time_t1
         total_reward += reward_t
-
         waiting_time_t = waiting_time_t1
 
         # new_state = sumo_int.getState(I)
         # agent.remember(state, action, reward_t, new_state, False)
 
         i += 1;
-        waiting_time_average = cal_waiting_time_average()
-        log.write('action - ' + str(i) + ', average waiting time - ' +
-                 str(waiting_time_average)  + ', action - ' +'('+str(action_time[0])+','+str(yellow_time1)+','+str(action_time[1])+','+str(yellow_time2)+')'+ ', total reward - ' + str(total_reward) +'\n')
+
+        # log.write('action - ' + str(i) + ', average waiting time - ' +
+        #          str(waiting_time_average)  + ', action - ' +'('+str(action_time[0])+','+str(yellow_time1)+','+str(action_time[1])+','+str(yellow_time2)+')'+ ', total reward - ' + str(total_reward) +'\n')
         # print '\n--------------------------------------------------- ',waiting_time, 'in step ', i, ' ---------------------------------------------------\n'
     log.close()
     traci.close()
     key = '_10000_' + str(time_test)
 
     total_reward_plot.append(total_reward)
-    print 'average waiting time: ' ,np.mean(waiting_time_plot), '- total reward: ',total_reward
-    np.save('array_plot/array_waiting_time_average_fix' + key + '.npy', [np.mean(waiting_time_plot)])
+    average_waiting_time = waiting_time / 14870
+    print 'average waiting time: ' ,average_waiting_time, '- total reward: ',total_reward
+    np.save('array_plot/array_waiting_time_average_fix' + key + '.npy', [average_waiting_time])
     np.save('array_plot/array_total_reward_fix' + key + '.npy', total_reward_plot)
 
+    # time_plot # average_waiting_time_plot
     np.save('array_plot/array_time_fix'+key+'.npy', time_plot)
     np.save('array_plot/array_waiting_time_fix'+key+'.npy', waiting_time_plot)
 

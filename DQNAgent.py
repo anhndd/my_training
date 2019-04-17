@@ -1,4 +1,4 @@
-
+6
 from keras.layers import Input, Conv2D, Flatten, Dense, LeakyReLU, Average, Add, Dot, Subtract, Multiply
 from keras.models import Model
 from keras.optimizers import Adam
