@@ -29,8 +29,11 @@ def main():
     axs[1].set_ylabel('waiting time (s)')
     axs[1].legend(loc='best')
 
-    print sum(y), sum(y2), (sum(y) - sum(y2)) / sum(y)
-    print sum(y5),sum(y2),(sum(y5)-sum(y2))/sum(y5)
+    average_waiting_time_fix33 = np.load('array_plot/array_waiting_time_average_fix' + key + '_33'+'.npy')[0]
+    average_waiting_time_fix40 = np.load('array_plot/array_waiting_time_average_fix' + key + '_40' + '.npy')[0]
+    average_waiting_time_model = np.load('array_plot/array_waiting_time_average' + key + '.npy')[0]
+    print sum(y), sum(y2), (sum(y) - sum(y2)) / sum(y), average_waiting_time_model,average_waiting_time_fix33,((average_waiting_time_fix33- average_waiting_time_model) / float(average_waiting_time_fix33)) * 100
+    print sum(y5),sum(y2),(sum(y5)-sum(y2))/sum(y5), average_waiting_time_model,average_waiting_time_fix40, ((average_waiting_time_fix40 - average_waiting_time_model) / float(average_waiting_time_fix40)) * 100
 
     plt.show()
 

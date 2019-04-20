@@ -67,6 +67,7 @@ def main():
     total_reward_plot = []
     episode_plot = []
     E_reward = np.load('array_plot/array_total_reward_fix_10000_40.npy')[0]
+    version = 0
     print 'E_reward: ', E_reward
     # Control code here
     memory_size = constants.memory_size                   # size memory
@@ -200,8 +201,8 @@ def main():
         traci.close(wait=False)
 
         if(E_reward < total_reward):
-            E_reward = total_reward
-            agent.save('Models/reinf_traf_control_v17_reward_max.h5')
+            version+=1
+            agent.save('Models_max/reinf_traf_control_v17_reward_max_v'+version+'_e_'+e+'.h5')
 
         average_waiting_time = (-total_reward) / 14870
         waiting_time_plot.append(average_waiting_time)

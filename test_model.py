@@ -73,7 +73,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models/reinf_traf_control_v14_loss_real_time.h5')
+        agent.load('test/reinf_traf_control_v14_loss_real_time.h5')
     except:
         print('No models found')
     agent.start_epsilon = 0
@@ -171,6 +171,7 @@ def main():
         # time_plot # average_waiting_time_plot
         average_waiting_time = waiting_time / 14870
         print 'average waiting time', average_waiting_time
+        np.save('array_plot/array_waiting_time_average' + key + '.npy', [average_waiting_time])
         np.save('array_plot/array_time'+key+'.npy', time_plot)
         np.save('array_plot/array_waiting_time'+key+'.npy', waiting_time_plot)
 
