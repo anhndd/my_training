@@ -1,4 +1,3 @@
-6
 from keras.layers import Input, Conv2D, Flatten, Dense, LeakyReLU, Average, Add, Dot, Subtract, Multiply
 from keras.models import Model
 from keras.optimizers import Adam
@@ -113,7 +112,7 @@ class DQNAgent:
     # select action random || by model.
     def select_action_v2(self,state, tentative_act_dec):
 
-        print ('self.start_epsilon: ', self.start_epsilon)
+        print ('self.start_epsilon: '+ str(self.start_epsilon))
         # if (tentative_act_dec[0][1] == 0):
         #     return np.argmax(tentative_act_dec[0])
         if np.random.rand() <= self.start_epsilon:
@@ -135,7 +134,7 @@ class DQNAgent:
 
     def select_action(self,state, tentative_act_dec):
         # print tentative_act_dec, tentative_act_dec[0], 'max = ',np.argmax(tentative_act_dec[0])
-        print ('self.start_epsilon: ', self.start_epsilon)
+        print ('self.start_epsilon: '+ str(self.start_epsilon))
         if (tentative_act_dec[0][1] == 0):
             return np.argmax(tentative_act_dec[0])
         if np.random.rand() <= self.start_epsilon:
@@ -181,15 +180,15 @@ class DQNAgent:
 
                     # expected: weight_is.len === replaymemory.len === TD_sum.len
                     if self.step > 20000:
-                        print ('len(weight_is): ', len(weight_is))
-                        print ('len(replaymemory): ', len(self.replay_memory))
-                        print ('len(TD_sum): ', len(TD_sum))
-                        print ('TD_index: ', TD_index)
+                        print ('len(weight_is): ', str(len(weight_is)))
+                        print ('len(replaymemory): ', str(len(self.replay_memory)))
+                        print ('len(TD_sum): ', str(len(TD_sum)))
+                        print ('TD_index: ', str(TD_index))
                     if TD_index > len(self.replay_memory):
-                        print ('len(weight_is): ', len(weight_is))
-                        print ('len(replaymemory): ', len(self.replay_memory))
-                        print ('len(TD_sum): ', len(TD_sum))
-                        print ('TD_index: ', TD_index)
+                        print ('len(weight_is): ', str(len(weight_is)))
+                        print ('len(replaymemory): ', str(len(self.replay_memory)))
+                        print ('len(TD_sum): ', str(len(TD_sum)))
+                        print ('TD_index: ', str(TD_index))
                         print('BUG: deuqe index out of range.')
 
                     batch_index.append(TD_index)

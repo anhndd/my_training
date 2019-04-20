@@ -68,7 +68,10 @@ def main():
     episode_plot = []
     E_reward = np.load('array_plot/array_total_reward_fix_10000_40.npy')[0]
     version = 0
-    print 'E_reward: ', E_reward
+    E_reward_33 = np.load('array_plot/array_total_reward_fix_10000_33.npy')[0]
+	array_plot_reward_40 = []
+	array_plot_reward_33 = []
+    print ('E_reward: ', str(E_reward))
     # Control code here
     memory_size = constants.memory_size                   # size memory
     mini_batch_size = constants.mini_batch_size           # minibatch_size
