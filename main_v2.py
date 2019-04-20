@@ -27,22 +27,22 @@ if is_ipython:
 
 plt.ion()
 
-
-def plot_durations(total_reward):
+def plot_durations(total_reward,array_plot_reward_40,array_plot_reward_33):
     plt.figure(2)
     plt.clf()
     plt.title('Training...')
     plt.xlabel('Episode')
-    plt.ylabel('Reward')
+    plt.ylabel('Duration')
     # plt.plot(episode_durations)
     # Take 100 episode averages and plot them too
+    plt.plot(array_plot_reward_33)
+    plt.plot(array_plot_reward_40)
     plt.plot(total_reward)
 
     plt.pause(0.001)  # pause a bit so that plots are updated
     if is_ipython:
         display.clear_output(wait=True)
         display.display(plt.gcf())
-
 
 def cal_waiting_time_average():
     number_vehicle = (traci.edge.getLastStepVehicleNumber('gneE21') + traci.edge.getLastStepVehicleNumber('gneE86')
@@ -71,7 +71,11 @@ def main():
     total_reward_plot = []
     episode_plot = []
     E_reward = np.load('array_plot/array_total_reward_fix_10000_40.npy')[0]
-    print 'E_reward: ', E_reward
+    version = 0
+    E_reward_33 = np.load('array_plot/array_total_reward_fix_10000_33.npy')[0]
+    array_plot_reward_40 = []
+    array_plot_reward_33 = []
+    print ('E_reward: ', str(E_reward))
     # Control code here
     memory_size = constants.memory_size  # size memory
     mini_batch_size = constants.mini_batch_size  # minibatch_size
@@ -206,24 +210,26 @@ def main():
                 # step 4: update epsilon:
                 agent.start_epsilon -= agent.epsilon_decay
 
-        print('episode - ' + str(e) + ' total waiting time - ' + str(waiting_time))
-        if(E_reward < total_reward):
-            E_reward = total_reward
-            agent.save('Models/reinf_traf_control_v17_reward_v2.h5')
+        agent.save('Models/reinf_traf_control_v14_loss_real_time.h5')
+        traci.close(wait=False)
 
-        waiting_time_plot.append(np.mean(waiting_time_average))
+        if(E_reward < total_reward):
+            version+=1
+            agent.save('Models_max/reinf_traf_control_v17_reward_max_v'+version+'_e_'+e+'.h5')
+
+        average_waiting_time = (-total_reward) / 14870
+        waiting_time_plot.append(average_waiting_time)
         total_reward_plot.append(total_reward)
+        array_plot_reward_40.append(E_reward)
+        array_plot_reward_33.append(E_reward_33)
         episode_plot.append(e)
         np.save('array_plot/array_waiting_time_average.npy', waiting_time_plot)
         np.save('array_plot/array_total_reward.npy', total_reward_plot)
         np.save('array_plot/array_episode.npy', episode_plot)
-        plot_durations(total_reward_plot)
-
-        traci.close(wait=False)
+        plot_durations(total_reward_plot,array_plot_reward_40,array_plot_reward_33)
 
     plt.ioff()
     plt.show()
-
 
 if __name__ == '__main__':
     main()
