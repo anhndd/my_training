@@ -27,7 +27,7 @@ if is_ipython:
 
 plt.ion()
 
-def plot_durations(total_reward):
+def plot_durations(total_reward,array_plot_reward_40,array_plot_reward_33):
     plt.figure(2)
     plt.clf()
     plt.title('Training...')
@@ -35,6 +35,8 @@ def plot_durations(total_reward):
     plt.ylabel('Duration')
     # plt.plot(episode_durations)
     # Take 100 episode averages and plot them too
+    plt.plot(array_plot_reward_33)
+    plt.plot(array_plot_reward_40)
     plt.plot(total_reward)
 
     plt.pause(0.001)  # pause a bit so that plots are updated
@@ -69,8 +71,8 @@ def main():
     E_reward = np.load('array_plot/array_total_reward_fix_10000_40.npy')[0]
     version = 0
     E_reward_33 = np.load('array_plot/array_total_reward_fix_10000_33.npy')[0]
-	array_plot_reward_40 = []
-	array_plot_reward_33 = []
+    array_plot_reward_40 = []
+    array_plot_reward_33 = []
     print ('E_reward: ', str(E_reward))
     # Control code here
     memory_size = constants.memory_size                   # size memory
@@ -210,11 +212,13 @@ def main():
         average_waiting_time = (-total_reward) / 14870
         waiting_time_plot.append(average_waiting_time)
         total_reward_plot.append(total_reward)
+        array_plot_reward_40.append(E_reward)
+        array_plot_reward_33.append(E_reward_33)
         episode_plot.append(e)
         np.save('array_plot/array_waiting_time_average.npy', waiting_time_plot)
         np.save('array_plot/array_total_reward.npy', total_reward_plot)
         np.save('array_plot/array_episode.npy', episode_plot)
-        plot_durations(total_reward_plot)
+        plot_durations(total_reward_plot,array_plot_reward_40,array_plot_reward_33)
 
     plt.ioff()
     plt.show()
