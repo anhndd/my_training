@@ -207,7 +207,7 @@ def main():
 
         if(E_reward < total_reward):
             version+=1
-            agent.save('Models_max/reinf_traf_control_v17_reward_max_v'+version+'_e_'+e+'.h5')
+            agent.save('Models_max/reinf_traf_control_v17_reward_max_v'+str(version)+'_e_'+str(e)+'.h5')
 
         average_waiting_time = (-total_reward) / 14870
         waiting_time_plot.append(average_waiting_time)
