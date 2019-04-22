@@ -108,7 +108,7 @@ def main():
     episodes = 2000
 
     # command to run SUMO
-    sumo_cmd = [sumoBinary, "-c", sumoConfig, '--start']
+    sumo_cmd = [sumoBinary, "-c", sumoConfig, '--no-warnings']
 
     # run 2000 episodes
     for e in range(episodes):
