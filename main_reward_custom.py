@@ -175,7 +175,7 @@ def main():
             # calculate REWARD
             waiting_time_t1 = cal_waiting_time()
             reward_t = waiting_time_t - waiting_time_t1 + reward_t_v2
-            waiting_time_t = waiting_time_t1
+
 
             # get NewState by selected-action
             new_state, tentative_act_dec = sumo_int.getState(I, action, tentative_action)
@@ -191,8 +191,10 @@ def main():
             state = new_state
             numb_of_cycle += 1
             agent.step += 1
-            print ('------------------------- step: ',numb_of_cycle, ' - total_reward: ' ,total_reward,' - action time:', action_time, ' --------------------')
-            
+            print ('------------------------- step: ' + str(numb_of_cycle) + '- waiting_time_t: ' + str(waiting_time_t) +
+                   '- waiting_time_t1: ' + str(waiting_time_t1) +  '- reward_t_v2: ' + str(reward_t_v2) +
+                   '- reward: ' + str(reward_t) +' - total_reward: ' + str(total_reward) + ' - action time:' + str(action_time) + ' --------------------')
+            waiting_time_t = waiting_time_t1
             if agent.progress == 'Training':
 				# step 1: if agent.step % 100 == 0 then update weights of target_network.
 				# ......... thinking ....................
