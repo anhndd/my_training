@@ -129,8 +129,6 @@ def main():
             # run a step on SUMO (~ 1 second).
             traci.simulationStep()
 
-            waiting_time = 0
-
             # Get progress?
             agent.progress = agent.get_progress()
             action = agent.select_action_v2(state, tentative_act_dec)
@@ -167,8 +165,7 @@ def main():
             #  ============================================================ Finish action ======================:
 
             # calculate REWARD
-            waiting_time += cal_waiting_time()
-            waiting_time_t1 = waiting_time
+            waiting_time_t1 = cal_waiting_time()
             reward_t = waiting_time_t - waiting_time_t1
             waiting_time_t = waiting_time_t1
 

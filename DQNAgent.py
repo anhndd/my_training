@@ -9,6 +9,8 @@ import tensorflow as tf
 import os
 import constants
 import time
+import math
+import keras.backend as K
 
 class DQNAgent:
     def __init__(self, M, action_size, B):
@@ -72,9 +74,7 @@ class DQNAgent:
         A_subtract = Subtract()([advantage, A])
 
         Q_value = Add()([value, A_subtract])
-        #
-        # input_3 = Input(shape=(5,))
-        # Output = Multiply()([input_3, Q_value])
+
         model = Model(inputs=[input_1, input_2], outputs=[Q_value])
         model.compile(optimizer= Adam(lr=self.epsilon_r), loss='mse')
 
@@ -116,7 +116,7 @@ class DQNAgent:
         if np.random.rand() <= self.start_epsilon:
             print('action by random')
             choices = np.where(tentative_act_dec[0] == 1)[0]
-            # print tentative_act_dec[0], choices, random.choice(choices)
+            print tentative_act_dec[0], choices, random.choice(choices)
             return random.choice(choices)
         else:
             print('action by model')
@@ -288,3 +288,51 @@ class DQNAgent:
         self.step_plot.append(self.step)
         np.save('array_plot/array_loss_random_sample.npy', self.loss_plot)
         np.save('array_plot/array_step_random_sample.npy', self.step_plot)
+
+    def store_priority(self, state, action, reward, next_state):
+        self.replay_memory.append((state, action, reward, next_state))
+
+    def replay_priority(self):
+        priority = []
+        minibatch = []
+        for i in range(len(self.replay_memory)):
+            s, a, r, next_s = self.replay_memory[i]
+            Q_value = self.model.predict(s)[0][a]
+            Q_target = self.targetDQN.model.predict(s)[a]
+            delta = abs(Q_value - Q_target)
+            priority.append(pow(delta,self.alpha_per))
+
+        sum = sum(priority)
+        priority =  [i / sum for i in priority]
+
+        for i in range(self.minibatch_size):
+            max_index = np.argmax(priority)
+            minibatch.append(self.replay_memory[max_index])
+            del priority[max_index]
+
+        # start replay with minibatch priority
+        for s, a, r, next_s in minibatch:
+            Q_value_comma = self.model.predict(next_s)[0]  # Q-value(s') -- PrimaryModel
+            a_comma = np.argmax(Q_value_comma)  # pick a' cause maxQ-value(s')
+            Q_target = r + self.gamma * self.targetDQN.model.predict(next_s)[0][a_comma]  # a number
+            target_f = self.model.predict(s)  # Q value Q(s,a,theta)
+            Q_value = target_f[0][a]
+
+            # PER: append TD_Error:
+            TD_error_batch.append(Q_target - Q_value)
+
+            # calculate loss for log
+            TD_error = (Q_target - Q_value) * (Q_target - Q_value)
+            J += TD_error
+
+            target_f[0][a] = Q_target
+            self.model.fit(s, target_f, epochs=1, verbose=0, batch_size=1)
+
+        J = J / self.minibatch_size
+
+        self.loss_plot.append(J)
+        self.step_plot.append(self.step)
+        np.save('array_plot/array_loss.npy', self.loss_plot)
+        np.save('array_plot/array_step.npy', self.step_plot)
+
+

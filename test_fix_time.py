@@ -54,7 +54,7 @@ def main():
     action_space = phase_number * 2 + 1
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
     I = np.full((action_space, action_space), 0.5).reshape(1, action_space, action_space)
-    time_test = 40
+    time_test = 33
     action_time = [time_test, time_test]
     idLightControl = '4628048104'
     waiting_time_t = 0
