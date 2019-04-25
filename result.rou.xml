@@ -181,59 +181,59 @@ latAlignment="left" lcPushy="1"/>
 
 
 <!-- -simulation v2- -->
-<flow id="myfl" begin="5000" end="8000" number="70" from="gneE81" to="gneE63" type="bus"/>
-<flow id="myfl1" begin="5000" end="8000" number="70" from="gneE64" to="gneE80" type="bus"/>
-<flow id="myfl2" begin="5500" end="9000" number="70" from="gneE52" to="gneE20" type="bus"/>
-<flow id="myfl3" begin="5500" end="9000" number="70" from="gneE0" to="gneE51" type="bus"/>
+<flow id="myfl" begin="5000" end="8000" number="200" from="gneE81" to="gneE63" type="bus"/>
+<flow id="myfl1" begin="5000" end="8000" number="200" from="gneE64" to="gneE80" type="bus"/>
+<flow id="myfl2" begin="5500" end="9000" number="80" from="gneE52" to="gneE20" type="bus"/>
+<flow id="myfl3" begin="5500" end="9000" number="80" from="gneE0" to="gneE51" type="bus"/>
 
-<flow id="myfl8" begin="5000" end="10000" number="70" from="gneE81" to="gneE51" type="bus"/>
-<flow id="myfl9" begin="5000" end="10000" number="70" from="gneE81" to="gneE20" type="bus"/>
-<flow id="myfl10" begin="5000" end="10000" number="70" from="gneE64" to="gneE20" type="bus"/>
-<flow id="myfl11" begin="5000" end="10000" number="70" from="gneE64" to="gneE51" type="bus"/>
+<flow id="myfl8" begin="5000" end="10000" number="200" from="gneE81" to="gneE51" type="bus"/>
+<flow id="myfl9" begin="5000" end="10000" number="200" from="gneE81" to="gneE20" type="bus"/>
+<flow id="myfl10" begin="5000" end="10000" number="200" from="gneE64" to="gneE20" type="bus"/>
+<flow id="myfl11" begin="5000" end="10000" number="200" from="gneE64" to="gneE51" type="bus"/>
 
 <!-- <vType id="bicycle" vClass="bicycle" minGap="0.5" latAlignment="arbitrary" lcPushy="1"/> -->
-<flow id="myfl12" begin="5000" end="8000" number="15" from="gneE81" to="gneE63" type="bicycle"/>
-<flow id="myfl13" begin="5000" end="8000" number="15" from="gneE64" to="gneE80" type="bicycle"/>
-<flow id="myfl14" begin="5500" end="9000" number="15" from="gneE52" to="gneE20" type="bicycle"/>
-<flow id="myfl15" begin="5500" end="9000" number="15" from="gneE0" to="gneE51" type="bicycle"/>
+<flow id="myfl12" begin="5000" end="8000" number="30" from="gneE81" to="gneE63" type="bicycle"/>
+<flow id="myfl13" begin="5000" end="8000" number="30" from="gneE64" to="gneE80" type="bicycle"/>
+<flow id="myfl14" begin="5500" end="9000" number="20" from="gneE52" to="gneE20" type="bicycle"/>
+<flow id="myfl15" begin="5500" end="9000" number="20" from="gneE0" to="gneE51" type="bicycle"/>
 
-<flow id="myfl16" begin="5000" end="10000" number="15" from="gneE81" to="gneE51" type="bicycle"/>
-<flow id="myfl17" begin="5000" end="10000" number="15" from="gneE81" to="gneE20" type="bicycle"/>
-<flow id="myfl18" begin="5000" end="10000" number="15" from="gneE64" to="gneE20" type="bicycle"/>
-<flow id="myfl19" begin="5000" end="10000" number="15" from="gneE64" to="gneE51" type="bicycle"/>
+<flow id="myfl16" begin="5000" end="10000" number="30" from="gneE81" to="gneE51" type="bicycle"/>
+<flow id="myfl17" begin="5000" end="10000" number="30" from="gneE81" to="gneE20" type="bicycle"/>
+<flow id="myfl18" begin="5000" end="10000" number="30" from="gneE64" to="gneE20" type="bicycle"/>
+<flow id="myfl19" begin="5000" end="10000" number="30" from="gneE64" to="gneE51" type="bicycle"/>
 
 <!-- <vType id="motorcycle" vClass="motorcycle" minGap="0.5" length="2.034" width="0.74" height="1.152" latAlignment="right" lcPushy="1"/> -->
-<flow id="myfl20" begin="5000" end="8000" number="150" from="gneE81" to="gneE63" type="motorcycle"/>
-<flow id="myfl21" begin="5000" end="8000" number="150" from="gneE64" to="gneE80" type="motorcycle"/>
-<flow id="myfl22" begin="5500" end="9000" number="150" from="gneE52" to="gneE20" type="motorcycle"/>
-<flow id="myfl23" begin="5500" end="9000" number="150" from="gneE0" to="gneE51" type="motorcycle"/>
+<flow id="myfl20" begin="5000" end="8000" number="300" from="gneE81" to="gneE63" type="motorcycle"/>
+<flow id="myfl21" begin="5000" end="8000" number="300" from="gneE64" to="gneE80" type="motorcycle"/>
+<flow id="myfl22" begin="5500" end="9000" number="200" from="gneE52" to="gneE20" type="motorcycle"/>
+<flow id="myfl23" begin="5500" end="9000" number="200" from="gneE0" to="gneE51" type="motorcycle"/>
 
-<flow id="myfl24" begin="5000" end="10000" number="150" from="gneE81" to="gneE51" type="motorcycle"/>
-<flow id="myfl25" begin="5000" end="10000" number="150" from="gneE81" to="gneE20" type="motorcycle"/>
-<flow id="myfl26" begin="5000" end="10000" number="150" from="gneE64" to="gneE20" type="motorcycle"/>
-<flow id="myfl27" begin="5000" end="10000" number="150" from="gneE64" to="gneE51" type="motorcycle"/>
+<flow id="myfl24" begin="5000" end="10000" number="300" from="gneE81" to="gneE51" type="motorcycle"/>
+<flow id="myfl25" begin="5000" end="10000" number="300" from="gneE81" to="gneE20" type="motorcycle"/>
+<flow id="myfl26" begin="5000" end="10000" number="300" from="gneE64" to="gneE20" type="motorcycle"/>
+<flow id="myfl27" begin="5000" end="10000" number="300" from="gneE64" to="gneE51" type="motorcycle"/>
 
 <!-- <vType id="truckv1" vClass="truck" guiShape="truck" minGap="2" length="4.3" width="1.8" height="2.0" latAlignment="left" lcPushy="1"/> -->
-<flow id="myfl28" begin="5000" end="8000" number="30" from="gneE81" to="gneE63" type="truckv1"/>
-<flow id="myfl29" begin="5000" end="8000" number="30" from="gneE64" to="gneE80" type="truckv1"/>
-<flow id="myfl30" begin="5500" end="9000" number="30" from="gneE52" to="gneE20" type="truckv1"/>
-<flow id="myfl31" begin="5500" end="9000" number="30" from="gneE0" to="gneE51" type="truckv1"/>
+<flow id="myfl28" begin="5000" end="8000" number="60" from="gneE81" to="gneE63" type="truckv1"/>
+<flow id="myfl29" begin="5000" end="8000" number="60" from="gneE64" to="gneE80" type="truckv1"/>
+<flow id="myfl30" begin="5500" end="9000" number="40" from="gneE52" to="gneE20" type="truckv1"/>
+<flow id="myfl31" begin="5500" end="9000" number="40" from="gneE0" to="gneE51" type="truckv1"/>
 
-<flow id="myfl32" begin="5000" end="10000" number="30" from="gneE81" to="gneE51" type="truckv1"/>
-<flow id="myfl33" begin="5000" end="10000" number="30" from="gneE81" to="gneE20" type="truckv1"/>
-<flow id="myfl34" begin="5000" end="10000" number="30" from="gneE64" to="gneE20" type="truckv1"/>
-<flow id="myfl35" begin="5000" end="10000" number="30" from="gneE64" to="gneE51" type="truckv1"/>
+<flow id="myfl32" begin="5000" end="10000" number="60" from="gneE81" to="gneE51" type="truckv1"/>
+<flow id="myfl33" begin="5000" end="10000" number="60" from="gneE81" to="gneE20" type="truckv1"/>
+<flow id="myfl34" begin="5000" end="10000" number="60" from="gneE64" to="gneE20" type="truckv1"/>
+<flow id="myfl35" begin="5000" end="10000" number="60" from="gneE64" to="gneE51" type="truckv1"/>
 
 <!-- <vType id="truckv2" vClass="truck" guiShape="truck" minGap="2" length="9.5" width="2.35" height="2.6" latAlignment="left" lcPushy="1"/> -->
-<flow id="myfl36" begin="5000" end="8000" number="30" from="gneE81" to="gneE63" type="truckv2"/>
-<flow id="myfl37" begin="5000" end="8000" number="30" from="gneE64" to="gneE80" type="truckv2"/>
-<flow id="myfl38" begin="5500" end="9000" number="30" from="gneE52" to="gneE20" type="truckv2"/>
-<flow id="myfl39" begin="5500" end="9000" number="30" from="gneE0" to="gneE51" type="truckv2"/>
+<flow id="myfl36" begin="5000" end="8000" number="60" from="gneE81" to="gneE63" type="truckv2"/>
+<flow id="myfl37" begin="5000" end="8000" number="60" from="gneE64" to="gneE80" type="truckv2"/>
+<flow id="myfl38" begin="5500" end="9000" number="40" from="gneE52" to="gneE20" type="truckv2"/>
+<flow id="myfl39" begin="5500" end="9000" number="40" from="gneE0" to="gneE51" type="truckv2"/>
 
-<flow id="myfl40" begin="5000" end="10000" number="30" from="gneE81" to="gneE51" type="truckv2"/>
-<flow id="myfl41" begin="5000" end="10000" number="30" from="gneE81" to="gneE20" type="truckv2"/>
-<flow id="myfl42" begin="5000" end="10000" number="30" from="gneE64" to="gneE20" type="truckv2"/>
-<flow id="myfl43" begin="5000" end="10000" number="30" from="gneE64" to="gneE51" type="truckv2"/>
+<flow id="myfl40" begin="5000" end="10000" number="60" from="gneE81" to="gneE51" type="truckv2"/>
+<flow id="myfl41" begin="5000" end="10000" number="60" from="gneE81" to="gneE20" type="truckv2"/>
+<flow id="myfl42" begin="5000" end="10000" number="60" from="gneE64" to="gneE20" type="truckv2"/>
+<flow id="myfl43" begin="5000" end="10000" number="60" from="gneE64" to="gneE51" type="truckv2"/>
 
 <!-- <vType id="police" vClass="emergency" guiShape="police" minGap="2"
 latAlignment="arbitrary" lcPushy="1"/>
@@ -264,15 +264,15 @@ latAlignment="arbitrary" lcPushy="1"/> -->
 <flow id="my49" begin="5000" end="9000" number="10" from="T8" to="gneE51" type="emergency"/>
 
 <!-- <vType id="taxi" vClass="taxi" guiShape="passenger/van" minGap="2" latAlignment="left" lcPushy="1"/> -->
-<flow id="myfl44" begin="5000" end="8000" number="30" from="gneE81" to="gneE63" type="taxi"/>
-<flow id="myfl45" begin="5000" end="8000" number="30" from="gneE64" to="gneE80" type="taxi"/>
-<flow id="myfl46" begin="5500" end="9000" number="30" from="gneE52" to="gneE20" type="taxi"/>
-<flow id="myfl47" begin="5500" end="9000" number="30" from="gneE0" to="gneE51" type="taxi"/>
+<flow id="myfl44" begin="5000" end="8000" number="60" from="gneE81" to="gneE63" type="taxi"/>
+<flow id="myfl45" begin="5000" end="8000" number="60" from="gneE64" to="gneE80" type="taxi"/>
+<flow id="myfl46" begin="5500" end="9000" number="50" from="gneE52" to="gneE20" type="taxi"/>
+<flow id="myfl47" begin="5500" end="9000" number="50" from="gneE0" to="gneE51" type="taxi"/>
 
-<flow id="myfl48" begin="5000" end="10000" number="30" from="gneE81" to="gneE51" type="taxi"/>
-<flow id="myfl49" begin="5000" end="10000" number="30" from="gneE81" to="gneE20" type="taxi"/>
-<flow id="myfl50" begin="5000" end="10000" number="30" from="gneE64" to="gneE20" type="taxi"/>
-<flow id="myfl51" begin="5000" end="10000" number="30" from="gneE64" to="gneE51" type="taxi"/>
+<flow id="myfl48" begin="5000" end="10000" number="60" from="gneE81" to="gneE51" type="taxi"/>
+<flow id="myfl49" begin="5000" end="10000" number="60" from="gneE81" to="gneE20" type="taxi"/>
+<flow id="myfl50" begin="5000" end="10000" number="60" from="gneE64" to="gneE20" type="taxi"/>
+<flow id="myfl51" begin="5000" end="10000" number="60" from="gneE64" to="gneE51" type="taxi"/>
 
 <!-- simulation v3 -->
     <!-- <vType id="bus" vClass="bus" guiShape="bus" minGap="2" length="9.44" width="2.45" height="3.1" latAlignment="left" lcPushy="1"/> -->

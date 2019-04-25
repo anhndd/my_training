@@ -73,7 +73,7 @@ def main():
     # new Agent.
     agent = DQNAgent.DQNAgent(memory_size, action_space_size, mini_batch_size)
     try:
-        agent.load('Models_max/reinf_traf_control_v14_loss_real_time.h5')
+        agent.load('Models_max/reinf_traf_control_v13_random_sample.h5')
     except:
         print('No models found')
     agent.start_epsilon = 0

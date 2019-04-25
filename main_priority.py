@@ -111,6 +111,8 @@ def main():
     for e in range(episodes):
         waiting_time_t = 0
         total_reward = 0
+        waiting_time = 0
+        waiting_time_t_v2 = 0
         waiting_time_average = []
         # start sumo simulation.
         traci.start(sumo_cmd)
@@ -144,25 +146,31 @@ def main():
                 traci.trafficlight.setPhase(idLightControl, 0)
                 traci.simulationStep()
                 waiting_time_average.append(cal_waiting_time_average())
-                total_reward -= cal_waiting_time_v2()
+                waiting_time += cal_waiting_time_v2()
             yellow_time1 = sumo_int.cal_yellow_phase(['gneE21', 'gneE89'], a_dec)
             for j in range(yellow_time1):
                 traci.trafficlight.setPhase(idLightControl, 1)
                 traci.simulationStep()
                 waiting_time_average.append(cal_waiting_time_average())
-                total_reward -= cal_waiting_time_v2()
+                waiting_time += cal_waiting_time_v2()
             for j in range(action_time[1]):
                 traci.trafficlight.setPhase(idLightControl, 2)
                 traci.simulationStep()
                 waiting_time_average.append(cal_waiting_time_average())
-                total_reward -= cal_waiting_time_v2()
+                waiting_time += cal_waiting_time_v2()
             yellow_time2 = sumo_int.cal_yellow_phase(['gneE86', 'gneE85'], a_dec)
             for j in range(yellow_time2):
                 traci.trafficlight.setPhase(idLightControl, 3)
                 traci.simulationStep()
                 waiting_time_average.append(cal_waiting_time_average())
-                total_reward -= cal_waiting_time_v2()
+                waiting_time += cal_waiting_time_v2()
             #  ============================================================ Finish action ======================:
+
+            # caclulate REWARD V2
+            waiting_time_t1_v2 = waiting_time
+            reward_t_v2 = waiting_time_t_v2 - waiting_time_t1_v2
+            waiting_time_t_v2 = waiting_time_t1_v2
+            total_reward += reward_t_v2
 
             # calculate REWARD
             waiting_time_t1 = cal_waiting_time()
@@ -177,7 +185,7 @@ def main():
             agent.store_priority(state, action, reward_t, new_state)
             
             # Case 2: stored EXP/Tuple
-            agent.remember(state, action, reward_t, new_state, False)
+            # agent.remember(state, action, reward_t, new_state, False)
 
             # reassign
             state = new_state
@@ -206,7 +214,7 @@ def main():
             version+=1
             agent.save('Models_max/reinf_traf_control_v17_reward_max_v'+str(version)+'_e_'+str(e)+'.h5')
 
-        average_waiting_time = (-total_reward) / 14870
+        average_waiting_time = (-total_reward) / constants.count_vehicle
         waiting_time_plot.append(average_waiting_time)
         total_reward_plot.append(total_reward)
         array_plot_reward_40.append(E_reward)

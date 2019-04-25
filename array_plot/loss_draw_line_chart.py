@@ -9,8 +9,8 @@ def main():
     y2 = np.load('array_plot/array_loss_random_sample.npy')
 
     fig, axs = plt.subplots(1, 1, tight_layout=True)
-    axs.plot(x,y, label="priority experience")
     axs.plot(x2,y2, label="random sample")
+    axs.plot(x,y, label="priority experience")
     axs.set_title('Loss')
     axs.set_xlabel('time of training (times)')
     axs.set_ylabel('loss')

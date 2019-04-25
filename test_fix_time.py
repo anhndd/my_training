@@ -1,16 +1,7 @@
 import os
 import sys
-import random
 import numpy as np
-import time
-import math
-import h5py
-from collections import deque
-from keras.layers import Input, Conv2D, Flatten, Dense, LeakyReLU, Average, Add, Dot, Subtract
-from keras.models import Model
-from keras.optimizers import Adam
-import tensorflow as tf
-from scipy.spatial.ckdtree import coo_entries
+import constants
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -54,7 +45,7 @@ def main():
     action_space = phase_number * 2 + 1
     action_policy = [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]
     I = np.full((action_space, action_space), 0.5).reshape(1, action_space, action_space)
-    time_test = 33
+    time_test = 40
     action_time = [time_test, time_test]
     idLightControl = '4628048104'
     waiting_time_t = 0
@@ -124,7 +115,7 @@ def main():
     key = '_10000_' + str(time_test)
 
     total_reward_plot.append(total_reward)
-    average_waiting_time = waiting_time / 14870
+    average_waiting_time = waiting_time / constants.count_vehicle
     print 'average waiting time: ' ,average_waiting_time, '- total reward: ',total_reward
     np.save('array_plot/array_waiting_time_average_fix' + key + '.npy', [average_waiting_time])
     np.save('array_plot/array_total_reward_fix' + key + '.npy', total_reward_plot)
