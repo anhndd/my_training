@@ -301,12 +301,14 @@ class DQNAgent:
         for i in range(len(self.replay_memory)):
             s, a, r, next_s = self.replay_memory[i]
             target_f = self.model.predict(s)
+            # print target_f
             Q_value = target_f[0][a]
             Q_value_comma = self.model.predict(next_s)[0]
             a_comma = np.argmax(Q_value_comma)
             Q_target = r + self.gamma * self.targetDQN.model.predict(next_s)[0][a_comma]
             target_f[0][a] = Q_target
             delta = abs(Q_value - Q_target)
+            # print Q_value,Q_target, delta
             priority.append([pow(delta, self.alpha_per), delta, target_f])
 
         sum_priority = sum(row[0] for row in priority)
@@ -329,7 +331,7 @@ class DQNAgent:
             self.model.fit(s, target_f, epochs=1, verbose=0, batch_size=1)
 
         J = J / self.minibatch_size
-
+        # print J
         self.loss_plot.append(J)
         self.step_plot.append(self.step)
         np.save('array_plot/array_loss.npy', self.loss_plot)
