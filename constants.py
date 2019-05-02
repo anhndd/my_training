@@ -1,3 +1,5 @@
+import count_vehicle
+
 memory_size = 20000								# 20.000
 mini_batch_size = 64							# 64
 a_dec = 4.5
@@ -12,7 +14,7 @@ Num_Exploration = 2000						# exploring in: 2.000 steps.
 Num_Training	= 30000						# training in: 30.000 steps
 Num_Testing     = 250000
 
-count_vehicle = 17390
+count_vehicle = count_vehicle.count_vehicle
 
 # testing:
 # Num_Exploration = 10						# exploring in: 2.000 steps.

@@ -7,6 +7,7 @@ from scipy.spatial.ckdtree import coo_entries
 # split file
 import DQNAgent
 import SumoIntersection
+import constants
 
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -17,7 +18,7 @@ else:
 import traci
 
 sumoBinary = "/usr/bin/sumo-gui"
-sumoConfig = "sumoconfig.sumoconfig"
+sumoConfig = "routes/sumoconfig.sumoconfig"
 
 
 def cal_waiting_time():
@@ -66,7 +67,7 @@ def main():
 
     # global count_action_dif_default
     I = np.full((action_space_size, action_space_size), 0.5).reshape(1, action_space_size, action_space_size)
-    idLightControl = '4628048104'
+    idLightControl = constants.idLightControl
     waiting_time_t = 0
     numb_of_cycle = 0
 
@@ -89,6 +90,7 @@ def main():
     # run 2000 episodes
     for e in range(episodes):
         # start sumo simulation.
+        type = 1
         traci.start(sumo_cmd)
 
         # init action.
@@ -167,10 +169,10 @@ def main():
 
         traci.close(wait=False)
         log.close()
-        key = '_10000'
+        key = ''
         # time_plot # average_waiting_time_plot
-        average_waiting_time = waiting_time / 14870
-        print 'average waiting time', average_waiting_time
+        average_waiting_time = waiting_time / constants.count_vehicle[type]
+        print ('average waiting time', average_waiting_time)
         np.save('array_plot/array_waiting_time_average' + key + '.npy', [average_waiting_time])
         np.save('array_plot/array_time'+key+'.npy', time_plot)
         np.save('array_plot/array_waiting_time'+key+'.npy', waiting_time_plot)

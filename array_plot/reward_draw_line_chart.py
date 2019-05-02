@@ -3,15 +3,16 @@ import sys
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+
 def main():
-    key = "_10000"
-    y = np.load('array_plot/array_total_reward.npy')
-    x = np.load('array_plot/array_episode.npy')
+    key = "_EW"
+    y = np.load('array_plot/array_total_reward'+key+'.npy')
+    x = range(0, len(y))
     # x2 = np.load('array_plot/time_reward_t_plot'+key+'.npy')
-    y2 = np.load('array_plot/array_total_reward_fix'+key+'_40.npy')
+    y2 = np.load('array_plot/array_total_reward_fix_40'+key+'.npy')
     y2 = np.full(len(x), y2[0])
     # print y2, len(x)
-    y3 = np.load('array_plot/array_total_reward_fix' + key + '_33.npy')
+    y3 = np.load('array_plot/array_total_reward_fix_33' + key + '.npy')
     y3 = np.full(len(x), y3[0])
 
     fig, axs = plt.subplots(2, 1, tight_layout=True)
@@ -24,13 +25,14 @@ def main():
     axs[0].legend(loc='best')
 
     # draw average waiting time
-    y = np.load('array_plot/array_waiting_time_average.npy')
-    x = np.load('array_plot/array_episode.npy')
+    y = np.load('array_plot/array_waiting_time_average'+key+'.npy')
+    y = [i*14870/2920 for i in y]
+    x = range(0, len(y))
     # x2 = np.load('array_plot/time_reward_t_plot'+key+'.npy')
-    y2 = np.load('array_plot/array_waiting_time_average_fix' + key + '_40.npy')
+    y2 = np.load('array_plot/array_waiting_time_average_fix_40' + key + '.npy')
     y2 = np.full(len(x), y2[0])
     # print y2, len(x)
-    y3 = np.load('array_plot/array_waiting_time_average_fix' + key + '_33.npy')
+    y3 = np.load('array_plot/array_waiting_time_average_fix_33' + key + '.npy')
     y3 = np.full(len(x), y3[0])
 
     axs[1].plot(x, y3, label="fix time 33")

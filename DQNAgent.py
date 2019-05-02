@@ -263,8 +263,6 @@ class DQNAgent:
 
         J = 0
         TD_error_batch = []
-        state = []
-        target_f_list = []
         for s, a, r, next_s, done in minibatch:
             if not done:
                 Q_value_comma = self.model.predict(next_s)[0]  # Q-value(s') -- PrimaryModel
@@ -281,12 +279,9 @@ class DQNAgent:
                 J += TD_error
 
                 target_f[0][a] = Q_target
-                state.append(np.array(s))
-                target_f_list.append(np.array(target_f))
-                # self.model.fit(s, target_f, epochs=1, verbose=0, batch_size=self.minibatch_size)
+                self.model.fit(s, target_f, epochs=1, verbose=0, batch_size=self.minibatch_size)
 
         J = J / self.minibatch_size
-        self.model.train_on_batch([state],target_f_list)
         self.loss_plot.append(J)
         self.step_plot.append(self.step)
         np.save('array_plot/array_loss_random_sample.npy', self.loss_plot)
