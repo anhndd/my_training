@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def main():
-    key = "_EW"
+    key = "_HIGH"
     y = np.load('array_plot/array_total_reward'+key+'.npy')
     x = range(0, len(y))
     # x2 = np.load('array_plot/time_reward_t_plot'+key+'.npy')
