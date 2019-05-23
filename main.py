@@ -173,7 +173,7 @@ def main():
     for e in range(episodes):
         waiting_time_t = 0
         total_reward = 0
-        waiting_time = 0
+        waiting_time = 0 
         waiting_time_t_v2 = 0
         # start sumo simulation.
         type = generator.gen_route(e)
